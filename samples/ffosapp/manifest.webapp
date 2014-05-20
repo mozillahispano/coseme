@@ -1,0 +1,13 @@
+{
+  "name": "CoSeMe",
+  "description": "CoSeMe test application",
+  "type": "privileged",
+  "launch_path": "/index.html",
+  "developer": {
+    "name": "No one knows"
+  },
+  "permissions": {
+    "tcp-socket": {},
+    "systemXHR": {}
+  }
+}

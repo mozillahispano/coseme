@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="pragma" content="no-cache">
+
+    <!-- Dependencies... -->
+    <script type="text/javascript" src="lib/core.js"></script>
+    <script type="text/javascript" src="lib/cipher-core.js"></script>
+    <script type="text/javascript" src="lib/enc-base64.js"></script>
+    <script type="text/javascript" src="lib/md5.js"></script>
+    <script type="text/javascript" src="lib/rc4.js"></script>
+    <script type="text/javascript" src="lib/sha1.js"></script>
+    <script type="text/javascript" src="lib/sha256.js"></script>
+    <script type="text/javascript" src="lib/hmac.js"></script>
+    <script type="text/javascript" src="lib/pbkdf2.js"></script>
+
+    <!-- CoSeMe... -->
+    <script type="text/javascript" src="lib/coseme/crypto/enc-ui8.js"></script>
+    <script type="text/javascript" src="lib/coseme/crypto/rc4_wp.js"></script>
+    <script type="text/javascript" src="lib/coseme/crypto/sha1_inplace.js"></script>
+
+    <script type="text/javascript" src="lib/coseme/core.js"></script>
+    <script type="text/javascript" src="lib/coseme/crypto/crypto.js"></script>
+    <script type="text/javascript" src="lib/coseme/common/config.js"></script>
+    <script type="text/javascript" src="lib/coseme/common/logger.js"></script>
+    <script type="text/javascript" src="lib/coseme/common/utils.js"></script>
+    <script type="text/javascript" src="lib/coseme/protocol/emitters/xml_emitter.js"></script>
+    <script type="text/javascript" src="lib/coseme/protocol/tree.js"></script>
+    <script type="text/javascript" src="lib/coseme/protocol/dictionary.js"></script>
+    <script type="text/javascript" src="lib/coseme/protocol/binary_writer.js"></script>
+    <script type="text/javascript" src="lib/coseme/protocol/binary_reader.js"></script>
+    <script type="text/javascript" src="lib/coseme/http/http.js"></script>
+    <script type="text/javascript" src="lib/coseme/http/registration.js"></script>
+    <script type="text/javascript" src="lib/coseme/http/media.js"></script>
+    <script type="text/javascript" src="lib/coseme/auth/connection.js"></script>
+    <script type="text/javascript" src="lib/coseme/auth/time.js"></script>
+    <script type="text/javascript" src="lib/coseme/auth/auth.js"></script>
+    <script type="text/javascript" src="lib/coseme/yowsup_if.js"></script>
+    <script type="text/javascript" src="lib/coseme/contacts.js"></script>
+
+    <!-- Application... -->
+    <script defer type="text/javascript" src="js/appcode.js"></script>
+    <script defer type="text/javascript" src="js/testing.js"></script>
+
+  </head>
+  <body>
+    <h1>CoSeMe app test</h1>
+
+    <h2>Test interface</h2>
+
+    <h3>Test calls</h3>
+
+    <p data-test="auth_login">Authenticating... <span></span></p>
+    <p data-test="message_ack">Message ack... <span></span></p>
+    <p data-test="message_send">Sending the message 'ñoño'... <span></span></p>
+    <p data-test="typing_send"><button>Send state "typing"</button> <span><button class="verification">Ok!</button></span></p>
+    <p data-test="typing_paused"><button>Send state "typing paused"</button> <span><button class="verification">Ok!</button></span></p>
+    <p data-test="profile_setStatus"><button>Set new status</button> <span><button class="verification">Ok!</button></span></p>
+    <p data-test="media_requestUpload-image">Requesting URL for sending an image... <span></span></p>
+    <p data-test="post-image">Posting the image... <span></span></p>
+    <p data-test="send-image">Sending the image... <span><button class="verification">Ok!</button></span></p>
+
+    <p data-test="media_requestUpload-video">Requesting URL for sending a video... <span></span></p>
+    <p data-test="post-video">Posting the video... <span></span></p>
+    <p data-test="send-video">Sending the video... <span><button class="verification">Ok!</button></span></p>
+
+    <p data-test="media_requestUpload-audio">Requesting URL for sending an audio... <span></span></p>
+    <p data-test="post-audio">Posting the audio... <span></span></p>
+    <p data-test="send-audio">Sending the audio... <span><button class="verification">Ok!</button></span></p>
+
+    <h4>Group testings</h4>
+    <p data-test="group_create">Creating a group... <span></span></p>
+    <p data-test="group_addParticipants">Adding a participant... <span></span></p>
+    <p data-test="group-send-message">Sending a message... <span></span></p>
+    <p data-test="group_removeParticipants">Removing a participant... <span></span></p>
+    <p data-test="group_setSubject">Changing subject... <span></span></p>
+    <p data-test="group_getInfo">Requesting info... <span></span></p>
+    <p data-test="group_getParticipants">Requesting participants... <span></span></p>
+    <p data-test="group_end">End the group... <span></span></p>
+
+    <input id="contacts-input" placeholder="List of contacts separated by ','">
+    <button id="contacts-button">Query contacts</button>
+
+    <p data-test="reconnect"><button>Reconnect</button> <span></span></p>
+
+    <h3>Test signals</h3>
+
+    <p data-test="message_received">Message received... <span></span></p>
+    <p data-test="disconnected">Diconnected received... <span></span></p>
+    <p data-test="contacts_sync">Contacts synchronized... <span></span></p>
+    <p data-test="contacts_gotStatus">Contacts status received... <span></span></p>
+    <p data-test="presence_updated">Contact's last seen received... <span></span></p>
+
+    <h4>Group signals</h4>
+
+    <p data-test="group_subjectReceived">Subject received... <span></span></p>
+    <p data-test="group_createSuccess">Group created... <span></span></p>
+    <p data-test="group_endSuccess">Group terminated... <span></span></p>
+    <p data-test="group_gotInfo">Group information got... <span></span></p>
+    <p data-test="group_addParticipantsSuccess">Participants added... <span></span></p>
+    <p data-test="group_removeParticipantsSuccess">Participants removed... <span></span></p>
+    <p data-test="group_gotParticipants">Participants got... <span></span></p>
+    <p data-test="group_setSubjectSuccess">Set subject... <span></span></p>
+    <p data-test="group_messageReceived">Message received... <span></span></p>
+    <p data-test="group_imageReceived">Image received... <span></span></p>
+    <p data-test="group_vcardReceived">VCARD received... <span></span></p>
+    <p data-test="group_videoReceived">Video received... <span></span></p>
+    <p data-test="group_audioReceived">Audio received... <span></span></p>
+    <p data-test="group_locationReceived">Location received... <span></span></p>
+    <p data-test="group_setPictureSuccess">Group picture set... <span></span></p>
+
+    <h4>Notifications</h4>
+    <p data-test="notification_contactProfilePictureUpdated">Profile picture updated... <span></span></p>
+    <p data-test="notification_groupPictureUpdated">Group picture updated... <span></span></p>
+    <p data-test="notification_groupParticipantAdded">Participant added... <span></span></p>
+    <p data-test="notification_groupParticipantRemoved">Participant removed... <span></span></p>
+
+    <h3>Log</h3>
+
+    <pre id="addHere"></pre>
+
+    <hr/>
+
+    <h2>XHR User agent</h2>
+    <button id="xhr-test-button">Test XHR</button>
+    <pre id="xhr-result"></pre>
+
+    <hr>
+
+    <h2>Request WA SMS</h2>
+    <input type="text" id="wa-id-input" placeholder="Device ID" value='abcd1234'>
+    <input type="tel" id="country-code-input" placeholder="Country code" value="34">
+    <input type="tel" id="phone-number-input" placeholder="Phone number">
+    <button id="request-sms-button">Request SMS</button>
+    <pre id="sms-result"></pre>
+
+    <h2>Request WA Register</h2>
+    <input id="register-code-input" placeholder="XXX-XXX">
+    <button id="register-button">Register</button>
+    <pre id="register-result"></pre>
+
+    <h2>Test download</h2>
+    <button id="download-button">Download</button>
+    <pre id="download-result"></pre>
+
+    <h2>Test upload</h2>
+    <button id="upload-button">Upload</button>
+    <pre id="upload-result"></pre>
+
+  </body>
+</html>

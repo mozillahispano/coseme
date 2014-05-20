@@ -1,0 +1,5 @@
+samples/ffosapp/lib/*
+*.orig
+samples/ffosapp/locales-obj/*
+samples/ffosapp/config.json
+dist

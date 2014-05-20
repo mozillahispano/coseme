@@ -1,0 +1,7 @@
+{
+  "cc": "country code",
+  "user": "user phone with the country code prefixed",
+  "password": "wa password",
+  "friend": "a friend with the country code prefixed"
+  "seed": "a seed for generating the unique id for your user"
+}
