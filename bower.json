@@ -1,0 +1,13 @@
+{
+  "name": "coseme",
+  "version": "1.0.0",
+  "main": "dist/coseme.js",
+  "devDependencies": {
+    "yuglify": "0.1.4"
+  },
+  "keywords": [
+    "whatsapp",
+    "javascript",
+    "library"
+  ]
+}
