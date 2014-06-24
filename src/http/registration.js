@@ -39,7 +39,6 @@ CoSeMe.namespace('registration', (function(){
       var params = Object.create(null);
       params['cc'] = countryCode;
       params['in'] = phone;
-      params['to'] = countryCode + phone;
       params['lc'] = 'US';
       params['lg'] = 'en';
       params['mcc'] = '000';
