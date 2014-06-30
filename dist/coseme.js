@@ -4114,7 +4114,7 @@ CoSeMe.namespace('protocol', (function(){
   };
 
   Tree.prototype.getAllChildren = function(tag) {
-    var all = typeof tag !== 'undefined';
+    var all = typeof tag === 'undefined';
     var filteredChildren = this.children.filter(function(child) {
       return all || child.tag === tag;
     });
@@ -5813,7 +5813,6 @@ CoSeMe.namespace('registration', (function(){
       var params = Object.create(null);
       params['cc'] = countryCode;
       params['in'] = phone;
-      params['to'] = countryCode + phone;
       params['lc'] = 'US';
       params['lg'] = 'en';
       params['mcc'] = '000';
@@ -6724,7 +6723,11 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
 
   var processNode = {
     result: function(iqType, idx, node) {
-      if (idx in _requests) {
+      var props = node.getChild('props');
+      if (props) {
+        getProperties(props.getAllChildren());
+      }
+      else if (idx in _requests) {
         _requests[idx](node);
         delete _requests[idx];
       }
@@ -6773,6 +6776,21 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
       }
     }
   };
+
+  function getProperties(propertyNodes) {
+    var properties = {};
+    var stringProperties = {};
+    propertyNodes.forEach(function (node) {
+      var name = node.getAttributeValue('name');
+      if (name) {
+        properties[name] = node.getAttributeValue('value');
+        if (!stringProperties[name]) {
+          properties[name] = parseInt(properties[name], 10);
+        }
+      }
+    });
+    _signalInterface.send('got_properties', [properties]);
+  }
 
   function onError(evt) {
     var reason = evt.data;
@@ -7657,6 +7675,7 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
 
       ping: [],
       pong: [],
+      got_properties: [],
       disconnected: [],
 
       media_uploadRequestSuccess: [],
@@ -8317,9 +8336,9 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
         innerNodeChildren.push(newProtocolTreeNode('user', {jid: aJid}));
       });
 
-      var queryNode = newProtocolTreeNode('list', {xmlns: 'w:profile:picture'},
-                                          innerNodeChildren);
-      var iqNode = newProtocolTreeNode('iq', {id: idx, type: 'get'}, [queryNode]);
+      var queryNode = newProtocolTreeNode('list', {}, innerNodeChildren);
+      var iqNode = newProtocolTreeNode('iq', {id: idx, type: 'get',
+                                      xmlns: 'w:profile:picture'}, [queryNode]);
 
       self._writeNode(iqNode);
     },
