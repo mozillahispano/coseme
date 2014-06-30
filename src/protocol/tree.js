@@ -91,7 +91,7 @@ CoSeMe.namespace('protocol', (function(){
   };
 
   Tree.prototype.getAllChildren = function(tag) {
-    var all = typeof tag !== 'undefined';
+    var all = typeof tag === 'undefined';
     var filteredChildren = this.children.filter(function(child) {
       return all || child.tag === tag;
     });
