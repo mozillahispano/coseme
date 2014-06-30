@@ -76,7 +76,11 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
 
   var processNode = {
     result: function(iqType, idx, node) {
-      if (idx in _requests) {
+      var props = node.getChild('props');
+      if (props) {
+        getProperties(props.getAllChildren());
+      }
+      else if (idx in _requests) {
         _requests[idx](node);
         delete _requests[idx];
       }
@@ -125,6 +129,21 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
       }
     }
   };
+
+  function getProperties(propertyNodes) {
+    var properties = {};
+    var stringProperties = {};
+    propertyNodes.forEach(function (node) {
+      var name = node.getAttributeValue('name');
+      if (name) {
+        properties[name] = node.getAttributeValue('value');
+        if (!stringProperties[name]) {
+          properties[name] = parseInt(properties[name], 10);
+        }
+      }
+    });
+    _signalInterface.send('got_properties', [properties]);
+  }
 
   function onError(evt) {
     var reason = evt.data;
@@ -1009,6 +1028,7 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
 
       ping: [],
       pong: [],
+      got_properties: [],
       disconnected: [],
 
       media_uploadRequestSuccess: [],

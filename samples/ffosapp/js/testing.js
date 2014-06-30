@@ -84,6 +84,9 @@
 
     ping: null,
     pong: null,
+    got_properties: function (properties) {
+      ok('got_properties');
+    },
     disconnected: null,
 
     media_uploadRequestSuccess: null,
