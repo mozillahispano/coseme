@@ -1669,9 +1669,9 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
         innerNodeChildren.push(newProtocolTreeNode('user', {jid: aJid}));
       });
 
-      var queryNode = newProtocolTreeNode('list', {xmlns: 'w:profile:picture'},
-                                          innerNodeChildren);
-      var iqNode = newProtocolTreeNode('iq', {id: idx, type: 'get'}, [queryNode]);
+      var queryNode = newProtocolTreeNode('list', {}, innerNodeChildren);
+      var iqNode = newProtocolTreeNode('iq', {id: idx, type: 'get',
+                                      xmlns: 'w:profile:picture'}, [queryNode]);
 
       self._writeNode(iqNode);
     },
