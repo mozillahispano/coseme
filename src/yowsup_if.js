@@ -1378,6 +1378,7 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
           try {
             if (!err && aConn) {
               self.socket = aConn;
+              self.expiration = aConn.expiration;
               self.socket.onconnectionclosed = self._onErrorSendDisconnected;
               self.socket.onconnectionlost = self._onErrorSendDisconnected;
               self.readerThread.socket = self.socket;
@@ -1737,6 +1738,10 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
     },
 
     getVersion: function() { return CoSeMe.config.tokenData['v']; },
+
+    getExpirationDate: function () {
+     return self.expiration;
+    },
 
     disconnect: function(aReason) {
       logger.log('Disconnect sequence initiated...');

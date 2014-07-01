@@ -6436,6 +6436,11 @@ CoSeMe.namespace('auth', (function() {
           return callback('expired');
         }
         logger.log('Authentication success!');
+        var expiration = successTree.getAttributeValue('expiration');
+        expiration = parseInt(expiration, 10);
+        if (!isNaN(expiration)) {
+          connection.expiration = new Date(expiration * 1000);
+        }
         setNextChallenge(successTree.data);
         callback(null);
       }
@@ -8025,6 +8030,7 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
           try {
             if (!err && aConn) {
               self.socket = aConn;
+              self.expiration = aConn.expiration;
               self.socket.onconnectionclosed = self._onErrorSendDisconnected;
               self.socket.onconnectionlost = self._onErrorSendDisconnected;
               self.readerThread.socket = self.socket;
@@ -8384,6 +8390,10 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
     },
 
     getVersion: function() { return CoSeMe.config.tokenData['v']; },
+
+    getExpirationDate: function () {
+     return self.expiration;
+    },
 
     disconnect: function(aReason) {
       logger.log('Disconnect sequence initiated...');

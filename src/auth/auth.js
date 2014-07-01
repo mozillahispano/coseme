@@ -188,6 +188,11 @@ CoSeMe.namespace('auth', (function() {
           return callback('expired');
         }
         logger.log('Authentication success!');
+        var expiration = successTree.getAttributeValue('expiration');
+        expiration = parseInt(expiration, 10);
+        if (!isNaN(expiration)) {
+          connection.expiration = new Date(expiration * 1000);
+        }
         setNextChallenge(successTree.data);
         callback(null);
       }
