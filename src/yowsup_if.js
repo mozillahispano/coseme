@@ -1249,7 +1249,7 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
 
       var picture = newProtocolTreeNode(
         'picture',
-        { xmlns: 'w:profile:picture' },
+        { },
         null,
         aImageData
       );
