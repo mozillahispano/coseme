@@ -41,7 +41,7 @@ describe('CoSeMe BinaryWriter', function() {
       runs(function() {
         expect(socketMock.sent())
           .toBe('57 41 01 04 00 00 1d f8 05 01 a4 90 88 fc 15 41 ' +
-                '6e 64 72 6f 69 64 2d 32 2e 31 31 2e 31 35 31 2d ' +
+                '6e 64 72 6f 69 64 2d 32 2e 31 31 2e 34 33 31 2d ' +
                 '35 32 32 32');
         expect(writer.flushBuffer.callCount).toBe(3);
       });

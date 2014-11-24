@@ -5822,12 +5822,15 @@ CoSeMe.namespace('registration', (function(){
       params['in'] = phone;
       params['lc'] = 'zz';
       params['lg'] = locale.split('-')[0] || 'en';
+      params['mcc'] = pad(mcc, 3);
+      params['mnc'] = pad(mnc, 3);
       params['sim_mcc'] = pad(mcc, 3);
       params['sim_mnc'] = pad(mnc, 3);
       params['method'] = 'sms';
       var seedAndId = getRealDeviceId(deviceId);
       params['id'] = seedAndId.id;
-      params['reason'] = 'self-send-jailbroken';
+      //params['reason'] = 'self-send-jailbroken';
+      params['network_radio_type'] = '1';
 
       // Get token
       params['token'] = getToken(phone);
@@ -6262,8 +6265,18 @@ CoSeMe.namespace('auth', (function() {
   var Tree = CoSeMe.protocol.Tree;
 
   var username, password, callback;
+  var mnc, mcc;
   var connection, outputKey;
   var authenticated = false;
+
+  function pad(value, positions) {
+    var padding = '';
+    var str = value + '';
+    if (str.length < positions) {
+      padding = new Array(positions - str.length + 1).join('0');
+    }
+    return padding + str;
+  }
 
   /*
    * Performs authentication with server given a user and a password.
@@ -6277,7 +6290,9 @@ CoSeMe.namespace('auth', (function() {
    *
    *  Other errors can be possible but the former ones are the most important.
    */
-  function authenticate(user, pass, cb) {
+  function authenticate(user, pass, mcc, mnc, cb) {
+    mcc = pad(mcc, 3);
+    mnc = pad(mnc, 3);
     username = user;
     password = pass;
     callback = cb;
@@ -6291,7 +6306,7 @@ CoSeMe.namespace('auth', (function() {
         // Try to authenticate if we have a one-shot-rejected error, instead of
         // bubbling it up to the app
         if (err === 'one-shot-rejected') {
-          authenticate(username, password, callback);
+          authenticate(username, password, mcc, mnc, callback);
           return;
         }
 
@@ -6421,9 +6436,7 @@ CoSeMe.namespace('auth', (function() {
 
       function sendResponseFor(challenge) {
         var authBlob = getAuthBlob(challenge);
-        var response = new Tree('response', { attributes: {
-          xmlns: 'urn:ietf:params:xml:ns:xmpp-sasl'
-        }, data: authBlob });
+        var response = new Tree('response', { data: authBlob });
         connection.writer.write(response);
       }
 
@@ -6471,7 +6484,7 @@ CoSeMe.namespace('auth', (function() {
     msg.concat(CryptoJS.enc.Latin1.parse(challenge));
     msg.concat(utcNow);
     msg.concat(CryptoJS.enc.Latin1.parse(CoSeMe.config.tokenData.u));
-    msg.concat(CryptoJS.enc.Latin1.parse(' MccMnc/000000'));
+    msg.concat(CryptoJS.enc.Latin1.parse(' MccMnc/' + mcc + mnc));
 
     // Encode response
     var buffer = new ByteArray(msg.sigBytes).writeAll(msg);
@@ -6515,7 +6528,6 @@ CoSeMe.namespace('auth', (function() {
       data = getAuthBlob(existingChallenge);
     }
     return new Tree('auth', { attributes: {
-      xmlns: 'urn:ietf:params:xml:ns:xmpp-sasl',
       mechanism: 'WAUTH-2',
       user: username
     }, data: data });
@@ -7740,15 +7752,7 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
     },
 
     getMessageNode: function(aJid, aChild) {
-      var requestNode = null;
-      var serverNode = newProtocolTreeNode('server');
-      var xNode = newProtocolTreeNode('x', {xmlns: 'jabber:x:event'},
-                                      [serverNode]);
-      // was (0 if requestNode is None else 1) + 2
-      var childCount = 2;
-      var messageChildren = [ ]; // [None]*childCount;
-      messageChildren.push(xNode);
-
+      var messageChildren = [];
       if (aChild instanceof Array) {
         messageChildren = messageChildren.concat(aChild);
       } else {
@@ -7824,10 +7828,12 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
       return mmNode;
     },
 
-    sendReceipt: function(jid, mid) {
+    sendReceipt: function(jid, mid, type) {
       self._writeNode(newProtocolTreeNode('receipt', {
         to: jid,
-        id: mid
+        id: mid,
+        t: Date.now(),
+        type: type
       }));
     },
 
@@ -8032,9 +8038,10 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
     /*
      * Authentication
      */
-    auth_login: function(aUsername, aPassword) {
+    auth_login: function(aUsername, aPassword, mcc, mnc) {
         logger.log('auth_login called for', aUsername);
-        CoSeMe.auth.authenticate(aUsername, aPassword, function(err, aConn) {
+        CoSeMe.auth.authenticate(aUsername, aPassword, mcc, mnc,
+        function(err, aConn) {
           try {
             if (!err && aConn) {
               self.socket = aConn;
@@ -8112,7 +8119,7 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
           null, aPreview);
     }),
     message_vcardSend: self.sendMessage.bind(self, function(aJid, aData, aName) {
-      aName = utf8FromString(aName)
+      aName = utf8FromString(aName);
       var cardNode = newProtocolTreeNode('vcard', {name: aName}, null, aData);
       return newProtocolTreeNode('media',
           {xmlns: 'urn:xmpp:whatsapp:mms', type: 'vcard'}, [cardNode]);
@@ -8133,6 +8140,9 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
     },
     visible_ack: function(aJid, aMsgId) {
       self._writeNode(self.getReceiptAck(aJid, aMsgId, 'visible'));
+    },
+    read_ack: function(aJid, aMsgId) {
+      self._writeNode(self.getReceiptAck(aJid, aMsgId, 'read'));
     },
     subject_ack: function(aJid, aMessageId) {
       logger.log('Sending subject recv receipt...');
