@@ -1,4 +1,8 @@
-If you have arrived here at this stage, your search-fu is strong in the force!
+API changes
+===========
 
-More details will be forthcoming soon! Stay tuned!
+## From 1.0.1 to 1.0.2
 
+https://github.com/mozillahispano/coseme/pull/2/files
+
+https://github.com/mozillahispano/openwapp/pull/35
