@@ -6,8 +6,18 @@ CoSeMe.namespace('auth', (function() {
   var Tree = CoSeMe.protocol.Tree;
 
   var username, password, callback;
+  var mnc, mcc;
   var connection, outputKey;
   var authenticated = false;
+
+  function pad(value, positions) {
+    var padding = '';
+    var str = value + '';
+    if (str.length < positions) {
+      padding = new Array(positions - str.length + 1).join('0');
+    }
+    return padding + str;
+  }
 
   /*
    * Performs authentication with server given a user and a password.
@@ -21,7 +31,9 @@ CoSeMe.namespace('auth', (function() {
    *
    *  Other errors can be possible but the former ones are the most important.
    */
-  function authenticate(user, pass, cb) {
+  function authenticate(user, pass, mcc, mnc, cb) {
+    mcc = pad(mcc, 3);
+    mnc = pad(mnc, 3);
     username = user;
     password = pass;
     callback = cb;
@@ -35,7 +47,7 @@ CoSeMe.namespace('auth', (function() {
         // Try to authenticate if we have a one-shot-rejected error, instead of
         // bubbling it up to the app
         if (err === 'one-shot-rejected') {
-          authenticate(username, password, callback);
+          authenticate(username, password, mcc, mnc, callback);
           return;
         }
 
@@ -165,9 +177,7 @@ CoSeMe.namespace('auth', (function() {
 
       function sendResponseFor(challenge) {
         var authBlob = getAuthBlob(challenge);
-        var response = new Tree('response', { attributes: {
-          xmlns: 'urn:ietf:params:xml:ns:xmpp-sasl'
-        }, data: authBlob });
+        var response = new Tree('response', { data: authBlob });
         connection.writer.write(response);
       }
 
@@ -215,7 +225,7 @@ CoSeMe.namespace('auth', (function() {
     msg.concat(CryptoJS.enc.Latin1.parse(challenge));
     msg.concat(utcNow);
     msg.concat(CryptoJS.enc.Latin1.parse(CoSeMe.config.tokenData.u));
-    msg.concat(CryptoJS.enc.Latin1.parse(' MccMnc/000000'));
+    msg.concat(CryptoJS.enc.Latin1.parse(' MccMnc/' + mcc + mnc));
 
     // Encode response
     var buffer = new ByteArray(msg.sigBytes).writeAll(msg);
@@ -259,7 +269,6 @@ CoSeMe.namespace('auth', (function() {
       data = getAuthBlob(existingChallenge);
     }
     return new Tree('auth', { attributes: {
-      xmlns: 'urn:ietf:params:xml:ns:xmpp-sasl',
       mechanism: 'WAUTH-2',
       user: username
     }, data: data });

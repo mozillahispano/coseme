@@ -1080,15 +1080,7 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
     },
 
     getMessageNode: function(aJid, aChild) {
-      var requestNode = null;
-      var serverNode = newProtocolTreeNode('server');
-      var xNode = newProtocolTreeNode('x', {xmlns: 'jabber:x:event'},
-                                      [serverNode]);
-      // was (0 if requestNode is None else 1) + 2
-      var childCount = 2;
-      var messageChildren = [ ]; // [None]*childCount;
-      messageChildren.push(xNode);
-
+      var messageChildren = [];
       if (aChild instanceof Array) {
         messageChildren = messageChildren.concat(aChild);
       } else {
@@ -1164,10 +1156,12 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
       return mmNode;
     },
 
-    sendReceipt: function(jid, mid) {
+    sendReceipt: function(jid, mid, type) {
       self._writeNode(newProtocolTreeNode('receipt', {
         to: jid,
-        id: mid
+        id: mid,
+        t: Date.now(),
+        type: type
       }));
     },
 
@@ -1372,9 +1366,10 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
     /*
      * Authentication
      */
-    auth_login: function(aUsername, aPassword) {
+    auth_login: function(aUsername, aPassword, mcc, mnc) {
         logger.log('auth_login called for', aUsername);
-        CoSeMe.auth.authenticate(aUsername, aPassword, function(err, aConn) {
+        CoSeMe.auth.authenticate(aUsername, aPassword, mcc, mnc,
+        function(err, aConn) {
           try {
             if (!err && aConn) {
               self.socket = aConn;
@@ -1452,7 +1447,7 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
           null, aPreview);
     }),
     message_vcardSend: self.sendMessage.bind(self, function(aJid, aData, aName) {
-      aName = utf8FromString(aName)
+      aName = utf8FromString(aName);
       var cardNode = newProtocolTreeNode('vcard', {name: aName}, null, aData);
       return newProtocolTreeNode('media',
           {xmlns: 'urn:xmpp:whatsapp:mms', type: 'vcard'}, [cardNode]);
@@ -1473,6 +1468,9 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
     },
     visible_ack: function(aJid, aMsgId) {
       self._writeNode(self.getReceiptAck(aJid, aMsgId, 'visible'));
+    },
+    read_ack: function(aJid, aMsgId) {
+      self._writeNode(self.getReceiptAck(aJid, aMsgId, 'read'));
     },
     subject_ack: function(aJid, aMessageId) {
       logger.log('Sending subject recv receipt...');
