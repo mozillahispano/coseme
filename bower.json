@@ -1,6 +1,6 @@
 {
   "name": "coseme",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "main": "dist/coseme.js",
   "devDependencies": {
     "yuglify": "0.1.4"
