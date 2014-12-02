@@ -7962,9 +7962,8 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
   }
 
   function sendPostAuthentication() {
-    // https://github.com/mgp25/WhatsAPI-Official/issues/173
-    //sendClientConfig('android', 'en', 'US');
-    //sendGetServerProperties();
+    sendClientConfig('android', 'en', 'US');
+    sendGetServerProperties();
     sendGetGroups();
     sendGetPrivacyList();
   }
