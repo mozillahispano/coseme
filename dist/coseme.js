@@ -5815,7 +5815,7 @@ CoSeMe.namespace('registration', (function(){
   }
 
   return {
-    getCode: function(countryCode, phone, onready, onerror, deviceId, mcc, mnc, locale) {
+    getCode: function(countryCode, phone, onready, onerror, deviceId, mcc, mnc, locale, method) {
       var params = Object.create(null);
       params['cc'] = countryCode;
       params['in'] = phone;
@@ -5825,7 +5825,7 @@ CoSeMe.namespace('registration', (function(){
       params['mnc'] = pad(mnc, 3);
       params['sim_mcc'] = pad(mcc, 3);
       params['sim_mnc'] = pad(mnc, 3);
-      params['method'] = 'sms';
+      params['method'] = method || 'sms';
       var seedAndId = getRealDeviceId(deviceId);
       params['id'] = seedAndId.id;
       //params['reason'] = 'self-send-jailbroken';
