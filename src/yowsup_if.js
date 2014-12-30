@@ -297,7 +297,7 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
                                  author]);
         }
         else if (type === 'status') {
-          // TODO: Not implemented in the current version
+          _signalInterface.send('notification_status', [from, msgId]);
         }
 
       }
@@ -333,6 +333,7 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
       var mediaSize = childNode.getAttributeValue("size");
       var encoding = childNode.getAttributeValue("encoding");
       var mediaPreview = childNode.data;
+      var wantsReceipt = true;
 
       var mediaProcessor = {
         // These functions are surprisingly similar, aren't they?...
@@ -523,7 +524,7 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
       },
 
       media: function() {
-        wantsReceipt = false;
+        wantsReceipt = true;
         var messageChildren = messageNode.children || [];
         messageChildren.forEach(processChildNode);
       }
@@ -931,8 +932,8 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
       return alive;
     },
 
-    terminate: function() {
-      throw 'NOT IMPLEMENTED!';
+    terminate: function(){
+	  return true;
     },
 
     sendDisconnected: function(reason) {
@@ -1014,6 +1015,8 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
       notification_groupPictureRemoved: [],
       notification_groupParticipantAdded: [],
       notification_groupParticipantRemoved: [],
+	  notification_status: [],
+
 
       contact_gotProfilePictureId: [],
       contact_gotProfilePicture: [],
@@ -1593,8 +1596,12 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
 
     // Presence
 
-    presence_sendAvailable: function() {
-      var presenceNode = newProtocolTreeNode('presence', {type: 'available'});
+    presence_sendAvailable: function(aPushname) {
+      var attrs = { type : 'available' };
+      if (aPushname) {
+        attrs.name = utf8FromString(aPushname);
+      }
+      var presenceNode = newProtocolTreeNode('presence', attrs)
       self._writeNode(presenceNode);
     },
 
@@ -1617,11 +1624,11 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
     },
 
     presence_sendAvailableForChat: function(aPushname) {
-      aPushname = utf8FromString(aPushname);
-      var presenceNode = newProtocolTreeNode('presence', {
-        name: aPushname,
-        type: 'active'
-      });
+      var attrs = { type : 'active' };
+      if (aPushname) {
+        attrs.name = utf8FromString(aPushname);
+      }
+      var presenceNode = newProtocolTreeNode('presence', attrs);
       self._writeNode(presenceNode);
     },
 

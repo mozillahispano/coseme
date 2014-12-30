@@ -10,10 +10,11 @@ CoSeMe.namespace('config', (function(){
 
     tokenData: {
 
-      "v": "2.11.473",
+      "v": "2.11.453",
       // should be tokenData[d] + - + tokenData[v] + - + port
-      "r": "Android-2.11.473-5222",
-      "u": "WhatsApp/2.11.473 Android/4.3 Device/GalaxyS3",
+      "r": "Android-2.11.453-5222",
+      "u": "WhatsApp/2.11.453 Android/4.3 Device/GalaxyS3",
+      "t": "PdA2DJyKoUrwLw1Bg6EIhzh502dF9noR9uFCllGk1377032097395{phone}",
       "d": "Android"
     },
 
