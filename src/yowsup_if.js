@@ -1160,12 +1160,13 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
     },
 
     sendReceipt: function(jid, mid, type) {
-      self._writeNode(newProtocolTreeNode('receipt', {
+      attributes = {
         to: jid,
         id: mid,
-        t: Date.now(),
-        type: type
-      }));
+        t: Date.now()
+      };
+      type && (attributes.type = type);
+      self._writeNode(newProtocolTreeNode('receipt', attributes));
     },
 
     getReceiptAck: function(to, id, type, participant, from) {
