@@ -1294,7 +1294,7 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
   }
 
   function sendPostAuthentication() {
-    sendClientConfig('android', 'en', 'US');
+    sendClientConfig('S40', 'en', 'GB');
     sendGetServerProperties();
     sendGetGroups();
     sendGetPrivacyList();
