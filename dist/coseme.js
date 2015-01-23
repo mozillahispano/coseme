@@ -1,6 +1,3 @@
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 /*
 CryptoJS v3.1.2
 code.google.com/p/crypto-js
@@ -2788,7 +2785,7 @@ code.google.com/p/crypto-js/wiki/License
           throw new Error("Update not supported!");
         },
 
-        // This append doesn't actually append...
+        // This append doesn't actually append... 
         // It just stores a ref to data. So any previous data will be lost!
         _append: function (data) {
           this._data = data;
@@ -2910,7 +2907,7 @@ code.google.com/p/crypto-js/wiki/License
            this._doProcessBlock(dataWords, offset);
          }
        }
-       // Remove processed even if we didn't process any words...
+       // Remove processed even if we didn't process any words... 
        // the hard way. Let's assume dataWords is NOT an array
        var l = dataWords.length;
        var dataLeft = new Array(l - offset)
@@ -3364,12 +3361,11 @@ CoSeMe.namespace('config', (function(){
     groupDomain: 'g.us',
 
     tokenData: {
-
-      "v": "2.11.453",
-      // should be tokenData[d] + - + tokenData[v] + - + port
-      "r": "Android-2.11.453-5222",
-      "u": "WhatsApp/2.11.453 Android/4.3 Device/GalaxyS3",
-      "d": "Android"
+      "v": "2.12.60",
+      // XXX: it is tokenData[d] + - + tokenData[v] + - + port
+      "r": "S40-2.12.60-5222",
+      "u": "WhatsApp/2.12.60 S40Version/14.26 Device/Nokia302",
+      "d": "S40"
     },
 
     auth: {
@@ -3869,6 +3865,14 @@ CoSeMe.namespace('utils', (function(){
     // but for some unknown reason, this is way slower...
   }
 
+  function encodeIdForURL(str) {
+    return str.split('').map(function (c) {
+      var hexrepr = c.charCodeAt(0).toString(16).toUpperCase();
+      if (hexrepr.length < 2) { hexrepr = '0' + hexrepr; }
+      return '%' + hexrepr;
+    }).join('');
+  }
+
   var utils = {
     urlencode: function _urlencode(params) {
       var pairs = [];
@@ -3878,11 +3882,14 @@ CoSeMe.namespace('utils', (function(){
           for (var i in params[paramName]) {
             aux.push(encodeURIComponent(paramName + '[]') + '=' +
                      encodeURIComponent(params[paramName][i]));
-          };
+          }
           pairs.push(aux.join('&'));
         } else {
-          pairs.push(encodeURIComponent(paramName) + '=' +
-                     encodeURIComponent(params[paramName]));
+          var encodedName = encodeURIComponent(paramName);
+          var encodedValue = paramName === 'id' ?
+                             encodeIdForURL(params[paramName]) :
+                             encodeURIComponent(params[paramName]);
+          pairs.push(encodedName + '=' + encodedValue);
         }
       }
       return pairs.join('&');
@@ -5779,27 +5786,10 @@ CoSeMe.namespace('registration', (function(){
   'use strict';
 
   function getToken(phone) {
-    var signature = atob(
-      'MIIDMjCCAvCgAwIBAgIETCU2pDALBgcqhkjOOAQDBQAwfDELMAkGA1UEBhMCVVMxEzARBgNVBAgTCkNhbGlmb3JuaWExFDASBgNVBAcTC1NhbnRhIENsYXJhMRYwFAYDVQQKEw1XaGF0c0FwcCBJbmMuMRQwEgYDVQQLEwtFbmdpbmVlcmluZzEUMBIGA1UEAxMLQnJpYW4gQWN0b24wHhcNMTAwNjI1MjMwNzE2WhcNNDQwMjE1MjMwNzE2WjB8MQswCQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTEUMBIGA1UEBxMLU2FudGEgQ2xhcmExFjAUBgNVBAoTDVdoYXRzQXBwIEluYy4xFDASBgNVBAsTC0VuZ2luZWVyaW5nMRQwEgYDVQQDEwtCcmlhbiBBY3RvbjCCAbgwggEsBgcqhkjOOAQBMIIBHwKBgQD9f1OBHXUSKVLfSpwu7OTn9hG3UjzvRADDHj+AtlEmaUVdQCJR+1k9jVj6v8X1ujD2y5tVbNeBO4AdNG/yZmC3a5lQpaSfn+gEexAiwk+7qdf+t8Yb+DtX58aophUPBPuD9tPFHsMCNVQTWhaRMvZ1864rYdcq7/IiAxmd0UgBxwIVAJdgUI8VIwvMspK5gqLrhAvwWBz1AoGBAPfhoIXWmz3ey7yrXDa4V7l5lK+7+jrqgvlXTAs9B4JnUVlXjrrUWU/mcQcQgYC0SRZxI+hMKBYTt88JMozIpuE8FnqLVHyNKOCjrh4rs6Z1kW6jfwv6ITVi8ftiegEkO8yk8b6oUZCJqIPf4VrlnwaSi2ZegHtVJWQBTDv+z0kqA4GFAAKBgQDRGYtLgWh7zyRtQainJfCpiaUbzjJuhMgo4fVWZIvXHaSHBU1t5w//S0lDK2hiqkj8KpMWGywVov9eZxZy37V26dEqr/c2m5qZ0E+ynSu7sqUD7kGx/zeIcGT0H+KAVgkGNQCo5Uc0koLRWYHNtYoIvt5R3X6YZylbPftF/8ayWTALBgcqhkjOOAQDBQADLwAwLAIUAKYCp0d6z4QQdyN74JDfQ2WCyi8CFDUM4CaNB+ceVXdKtOrNTQcc0e+t'
-    );
-    var classesMd5 = atob('U8Rv0Yqm6qUsIGkGbBBaZA==');
-    var key2 = atob('/UIGKU1FVQa+ATM2A0za7G2KI9S/CwPYjgAbc67v7ep42eO/WeTLx1lb1cHwxpsEgF4+PmYpLd2YpGUdX/A2JQitsHzDwgcdBpUf7psX1BU=');
-    var data = CryptoJS.enc.Latin1.parse(signature + classesMd5 + phone);
-
-    var opad = new Uint8Array(64);
-    var ipad = new Uint8Array(64);
-    for (var i = 0; i < 64; i++) {
-      opad[i] = 0x5C ^ key2.charCodeAt(i);
-      ipad[i] = 0x36 ^ key2.charCodeAt(i);
-    }
-    ipad = CryptoJS.enc.UInt8Array.parse(ipad);
-    opad = CryptoJS.enc.UInt8Array.parse(opad);
-
-    var output = CryptoJS.SHA1(
-      opad.concat(CryptoJS.SHA1(ipad.concat(data)))
-    );
-
-    return output.toString(CryptoJS.enc.Base64);
+    var plain = 'PdA2DJyKoUrwLw1Bg6EIhzh502dF9noR9uFCllGk1418865329241' + phone;
+    var data = CryptoJS.enc.Latin1.parse(plain);
+    var output = CryptoJS.MD5(data);
+    return output.toString();
   }
 
   function getRealDeviceId(aSeed) {
@@ -5822,23 +5812,44 @@ CoSeMe.namespace('registration', (function(){
       var params = Object.create(null);
       params['cc'] = countryCode;
       params['in'] = phone;
-      params['lc'] = 'zz';
+      params['lc'] = locale.split('-')[1] || 'GB';
       params['lg'] = locale.split('-')[0] || 'en';
       params['mcc'] = pad(mcc, 3);
       params['mnc'] = pad(mnc, 3);
       params['sim_mcc'] = pad(mcc, 3);
       params['sim_mnc'] = pad(mnc, 3);
       params['method'] = method in {'sms': 1, 'voice': 1} ? method : 'sms';
-      var seedAndId = getRealDeviceId(deviceId);
-      params['id'] = seedAndId.id;
-      //params['reason'] = 'self-send-jailbroken';
       params['network_radio_type'] = '1';
-
-      // Get token
+      params['reason'] = 'self-send-jailbroken';
       params['token'] = getToken(phone);
 
-      CoSeMe.http.doRequest('code', params, onready, onerror);
+      var seedAndId = getRealDeviceId(deviceId);
+      params['id'] = seedAndId.id;
+
+      this.exists(countryCode, phone, seedAndId.id,
+        function onSuccess(result) {
+          if (result && result['status'] === 'ok') {
+            onready(result);
+          }
+          else {
+            CoSeMe.http.doRequest('code', params, onready, onerror);
+          }
+        },
+        onerror
+      );
+
       return seedAndId.seed; // Return the deviceId we've used in case we want to store it.
+    },
+
+    exists: function(cc, phone, id, onready, onerror) {
+      var params = Object.create(null);
+      params['cc'] = cc;
+      params['in'] = phone;
+      params['id'] = id;
+      params['lg'] = 'en';
+      params['lc'] = 'GB';
+      params['token'] = getToken(phone);
+      CoSeMe.http.doRequest('exist', params, onready, onerror);
     },
 
     register: function(countryCode, phone, registerCode, onready, onerror, deviceId) {
@@ -7649,12 +7660,13 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
     },
 
     sendReceipt: function(jid, mid, type) {
-      self._writeNode(newProtocolTreeNode('receipt', {
+      attributes = {
         to: jid,
         id: mid,
-        t: Date.now(),
-        type: type
-      }));
+        t: Date.now()
+      };
+      type && (attributes.type = type);
+      self._writeNode(newProtocolTreeNode('receipt', attributes));
     },
 
     getReceiptAck: function(to, id, type, participant, from) {
@@ -7782,7 +7794,7 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
   }
 
   function sendPostAuthentication() {
-    sendClientConfig('android', 'en', 'US');
+    sendClientConfig('S40', 'en', 'GB');
     sendGetServerProperties();
     sendGetGroups();
     sendGetPrivacyList();

@@ -28,23 +28,44 @@ CoSeMe.namespace('registration', (function(){
       var params = Object.create(null);
       params['cc'] = countryCode;
       params['in'] = phone;
-      params['lc'] = 'zz';
+      params['lc'] = locale.split('-')[1] || 'GB';
       params['lg'] = locale.split('-')[0] || 'en';
       params['mcc'] = pad(mcc, 3);
       params['mnc'] = pad(mnc, 3);
       params['sim_mcc'] = pad(mcc, 3);
       params['sim_mnc'] = pad(mnc, 3);
       params['method'] = method in {'sms': 1, 'voice': 1} ? method : 'sms';
-      var seedAndId = getRealDeviceId(deviceId);
-      params['id'] = seedAndId.id;
-      //params['reason'] = 'self-send-jailbroken';
       params['network_radio_type'] = '1';
-
-      // Get token
+      params['reason'] = 'self-send-jailbroken';
       params['token'] = getToken(phone);
 
-      CoSeMe.http.doRequest('code', params, onready, onerror);
+      var seedAndId = getRealDeviceId(deviceId);
+      params['id'] = seedAndId.id;
+
+      this.exists(countryCode, phone, seedAndId.id,
+        function onSuccess(result) {
+          if (result && result['status'] === 'ok') {
+            onready(result);
+          }
+          else {
+            CoSeMe.http.doRequest('code', params, onready, onerror);
+          }
+        },
+        onerror
+      );
+
       return seedAndId.seed; // Return the deviceId we've used in case we want to store it.
+    },
+
+    exists: function(cc, phone, id, onready, onerror) {
+      var params = Object.create(null);
+      params['cc'] = cc;
+      params['in'] = phone;
+      params['id'] = id;
+      params['lg'] = 'en';
+      params['lc'] = 'GB';
+      params['token'] = getToken(phone);
+      CoSeMe.http.doRequest('exist', params, onready, onerror);
     },
 
     register: function(countryCode, phone, registerCode, onready, onerror, deviceId) {
