@@ -323,6 +323,14 @@ CoSeMe.namespace('utils', (function(){
     // but for some unknown reason, this is way slower...
   }
 
+  function encodeIdForURL(str) {
+    return str.split('').map(function (c) {
+      var hexrepr = c.charCodeAt(0).toString(16).toUpperCase();
+      if (hexrepr.length < 2) { hexrepr = '0' + hexrepr; }
+      return '%' + hexrepr;
+    }).join('');
+  }
+
   var utils = {
     urlencode: function _urlencode(params) {
       var pairs = [];
@@ -332,11 +340,14 @@ CoSeMe.namespace('utils', (function(){
           for (var i in params[paramName]) {
             aux.push(encodeURIComponent(paramName + '[]') + '=' +
                      encodeURIComponent(params[paramName][i]));
-          };
+          }
           pairs.push(aux.join('&'));
         } else {
-          pairs.push(encodeURIComponent(paramName) + '=' +
-                     encodeURIComponent(params[paramName]));
+          var encodedName = encodeURIComponent(paramName);
+          var encodedValue = paramName === 'id' ?
+                             encodeIdForURL(params[paramName]) :
+                             encodeURIComponent(params[paramName]);
+          pairs.push(encodedName + '=' + encodedValue);
         }
       }
       return pairs.join('&');
