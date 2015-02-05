@@ -30,13 +30,9 @@ CoSeMe.namespace('registration', (function(){
       params['in'] = phone;
       params['lc'] = locale.split('-')[1] || 'GB';
       params['lg'] = locale.split('-')[0] || 'en';
-      params['mcc'] = pad(mcc, 3);
-      params['mnc'] = pad(mnc, 3);
       params['sim_mcc'] = pad(mcc, 3);
       params['sim_mnc'] = pad(mnc, 3);
       params['method'] = method in {'sms': 1, 'voice': 1} ? method : 'sms';
-      params['network_radio_type'] = '1';
-      params['reason'] = 'self-send-jailbroken';
       params['token'] = getToken(phone);
 
       var seedAndId = getRealDeviceId(deviceId);
