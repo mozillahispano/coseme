@@ -1,6 +1,3 @@
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 /*
 CryptoJS v3.1.2
 code.google.com/p/crypto-js
@@ -2788,7 +2785,7 @@ code.google.com/p/crypto-js/wiki/License
           throw new Error("Update not supported!");
         },
 
-        // This append doesn't actually append...
+        // This append doesn't actually append... 
         // It just stores a ref to data. So any previous data will be lost!
         _append: function (data) {
           this._data = data;
@@ -2910,7 +2907,7 @@ code.google.com/p/crypto-js/wiki/License
            this._doProcessBlock(dataWords, offset);
          }
        }
-       // Remove processed even if we didn't process any words...
+       // Remove processed even if we didn't process any words... 
        // the hard way. Let's assume dataWords is NOT an array
        var l = dataWords.length;
        var dataLeft = new Array(l - offset)
@@ -5817,13 +5814,9 @@ CoSeMe.namespace('registration', (function(){
       params['in'] = phone;
       params['lc'] = locale.split('-')[1] || 'GB';
       params['lg'] = locale.split('-')[0] || 'en';
-      params['mcc'] = pad(mcc, 3);
-      params['mnc'] = pad(mnc, 3);
       params['sim_mcc'] = pad(mcc, 3);
       params['sim_mnc'] = pad(mnc, 3);
       params['method'] = method in {'sms': 1, 'voice': 1} ? method : 'sms';
-      params['network_radio_type'] = '1';
-      params['reason'] = 'self-send-jailbroken';
       params['token'] = getToken(phone);
 
       var seedAndId = getRealDeviceId(deviceId);
@@ -7962,8 +7955,8 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
 
     //Message and Notification Acks
 
-    message_ack: function(aJid, aMsgId) {
-      self.sendReceipt(aJid, aMsgId);
+    message_ack: function(aJid, aMsgId, type) {
+      self.sendReceipt(aJid, aMsgId, type);
     },
     notification_ack: function(aJid, aNotificationId) {
       self.sendReceipt(aJid, aNotificationId);
