@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 /*
+/*
 CryptoJS v3.1.2
 code.google.com/p/crypto-js
 (c) 2009-2013 by Jeff Mott. All rights reserved.
@@ -5789,7 +5790,7 @@ CoSeMe.namespace('registration', (function(){
   'use strict';
 
   function getToken(phone) {
-    var plain = 'PdA2DJyKoUrwLw1Bg6EIhzh502dF9noR9uFCllGk1418865329241' + phone;
+    var plain = 'PdA2DJyKoUrwLw1Bg6EIhzh502dF9noR9uFCllGk1425519315543' + phone;
     var data = CryptoJS.enc.Latin1.parse(plain);
     var output = CryptoJS.MD5(data);
     return output.toString();
