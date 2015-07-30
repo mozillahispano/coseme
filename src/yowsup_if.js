@@ -1201,6 +1201,16 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
       return idx;
     },
 
+    sendKeepalive: function() {
+      self._writeNode(null);
+    },
+
+    sendPing: function(aIdx) {
+      var iqNode =
+        newProtocolTreeNode('iq', {type: 'get', xmlns: 'w:p', to: self.domain, id: aIdx});
+      self._writeNode(iqNode);
+    },
+
     sendPong: function(aIdx) {
       var iqNode =
         newProtocolTreeNode('iq', {type: 'result', to: self.domain, id: aIdx});
@@ -1486,6 +1496,8 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
 
     // Keep Alive
 
+    keepalive: self.sendKeepalive,
+    ping: self.sendPing,
     pong: self.sendPong,
 
     //Groups
