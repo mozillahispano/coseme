@@ -29,13 +29,11 @@ CoSeMe.namespace('protocol', (function(){
    */
   BinaryWriter.prototype.streamStart = function(domain, resource, callback) {
     var writerTask = this.newWriteTask(callback);
-    setTimeout(function() {
-      writerTask._sendProtocol(IS_COUNTING);
-      writerTask._sendProtocol();
+    writerTask._sendProtocol(IS_COUNTING);
+    writerTask._sendProtocol();
 
-      writerTask._streamStart(domain, resource, IS_COUNTING);
-      writerTask._streamStart(domain, resource);
-    });
+    writerTask._streamStart(domain, resource, IS_COUNTING);
+    writerTask._streamStart(domain, resource);
   };
 
   BinaryWriter.prototype._sendProtocol = function(counting) {
@@ -63,10 +61,8 @@ CoSeMe.namespace('protocol', (function(){
    */
   BinaryWriter.prototype.write = function(tree, callback) {
     var writerTask = this.newWriteTask(callback);
-    setTimeout(function() {
-      writerTask._write(tree, IS_COUNTING);
-      writerTask._write(tree);
-    });
+    writerTask._write(tree, IS_COUNTING);
+    writerTask._write(tree);
   };
 
   /*
