@@ -953,7 +953,7 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
     // To-do: To be faithful with Yowsup, this should spawn a thread per handler
     signalHandlers[aSignal].forEach(function (aHandler) {
       try {
-        setTimeout(function() {aHandler.apply(undefined, aParams);}, 0);
+        aHandler.apply(undefined, aParams);
       } catch (x) {
         logger.error('FireEvent exception!', x);
       }
