@@ -244,19 +244,10 @@ CoSeMe.namespace('auth', (function() {
 
   function getFeatures() {
     var features = [
-      new Tree('receipt_acks'),
-      new Tree('w:profile:picture', { attributes: {
-        type: 'all'
-      }}),
-      new Tree('w:profile:picture', { attributes: {
-        type: 'group'
-      }}),
-      new Tree('notification', { attributes: {
-        type: 'participant'
-      }}),
-      new Tree('status', { attributes: {
-        notification: 'true'
-      }})
+      new Tree('readreceipts'),
+      new Tree('groups_v2'),
+      new Tree('privacy'),
+      new Tree('presence')
     ];
 
     return new Tree('stream:features', { children: features });
