@@ -1285,7 +1285,7 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
         id: idx,
         type: 'set',
         to: aGjid,
-        xmlns: 'w:g'
+        xmlns: 'w:g2'
       }, [operation]);
 
       self.readerThread.requests[idx] = aCallback;
@@ -1390,12 +1390,12 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
   }
 
   function _sendGetGroups(id, type) {
-    var commandNode = newProtocolTreeNode('list', { type: type });
+    var commandNode = newProtocolTreeNode(type, null);
     var iqNode = newProtocolTreeNode('iq', {
       id: id,
       type: 'get',
       to: 'g.us',
-      xmlns: 'w:g'
+      xmlns: 'w:g2'
     }, [commandNode]);
     self._writeNode(iqNode);
   }
@@ -1545,13 +1545,13 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
     //Groups
 
     group_getInfo: function(aJid) {
-      var idx = self.makeId('get_g_info_');
+      var idx = self.makeId('get_groupv2_info_');
       var queryNode = newProtocolTreeNode('query');
       var iqNode = newProtocolTreeNode('iq', {
         id: idx,
         type: 'get',
         to: aJid,
-        xmlns: 'w:g'
+        xmlns: 'w:g2'
       }, [queryNode]);
 
       self.readerThread.requests[idx] = self.readerThread.parseGroupInfo;
@@ -1570,7 +1570,7 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
         id: idx,
         type: 'set',
         to: 'g.us',
-        xmlns: 'w:g'
+        xmlns: 'w:g2'
       }, [groupNode]);
 
       self.readerThread.requests[idx] = self.readerThread.parseGroupCreated;
@@ -1608,7 +1608,7 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
         id: idx,
         type: 'set',
         to: 'g.us',
-        xmlns: 'w:g'
+        xmlns: 'w:g2'
       }, [leaveNode]);
 
       self.readerThread.requests[idx] = self.readerThread.parseGroupEnded;
@@ -1623,7 +1623,7 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
         id: idx,
         type: 'set',
         to: aGjid,
-        xmlns: 'w:g'
+        xmlns: 'w:g2'
       }, [subjectNode]);
 
       self.readerThread.requests[idx] = self.readerThread.parseGroupSubject;
@@ -1638,7 +1638,7 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
         id: idx,
         type: 'get',
         to: aGjid,
-        xmlns: 'w:g'
+        xmlns: 'w:g2'
       }, [listNode]);
 
       self.readerThread.requests[idx] = self.readerThread.parseParticipants;
@@ -1878,7 +1878,7 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
      var idx = self.makeId('get_groups_');
      self.readerThread.requests[idx] = self.readerThread.parseGroups;
 
-     var queryNode = newProtocolTreeNode('list',{xmlns: 'w:g', type: aGtype});
+     var queryNode = newProtocolTreeNode('list',{xmlns: 'w:g2', type: aGtype});
      var iqNode = newProtocolTreeNode('iq',{id: idx, type: 'get', to: 'g.us'},
                                       [queryNode]);
 
