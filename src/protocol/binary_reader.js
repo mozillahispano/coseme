@@ -35,7 +35,9 @@ CoSeMe.namespace('protocol', (function(){
 
     var self = this;
     this.socket.ondata = function(evt) {
-     self.onSocketData(evt.data);
+      var lock = navigator.requestWakeLock('cpu');
+      self.onSocketData(evt.data);
+      lock.unlock();
     };
   };
 
@@ -68,7 +70,7 @@ CoSeMe.namespace('protocol', (function(){
   BinaryReader.prototype.onSocketData = function(rawData) {
     logger.log('Received socket data:', rawData.byteLength, 'bytes!')
     rawData && this.addDataChunk(rawData);
-    setTimeout(this.checkForAnotherTree.bind(this));
+    this.checkForAnotherTree();
   };
 
   /**
@@ -77,16 +79,15 @@ CoSeMe.namespace('protocol', (function(){
    * are more trees.
    */
   BinaryReader.prototype.checkForAnotherTree = function() {
-    if (this.waitingForMessage()) return;
+    while (!this.waitingForMessage()) {
 
-    if (!this.isStreamStartRead) {
-      this.readStreamStart();
-      this.isStreamStartRead = true;
-    } else {
-      this.readNextTree();
+      if (!this.isStreamStartRead) {
+        this.readStreamStart();
+        this.isStreamStartRead = true;
+      } else {
+        this.readNextTree();
+      }
     }
-
-    setTimeout(this.checkForAnotherTree.bind(this));
   }
 
   /**
@@ -95,9 +96,7 @@ CoSeMe.namespace('protocol', (function(){
    */
   BinaryReader.prototype.readStreamStart = function() {
     var readerTask = this.newReaderTask();
-    setTimeout(function() {
-      readerTask._readStreamStart();
-    });
+    readerTask._readStreamStart();
   };
 
   /**
@@ -195,22 +194,25 @@ CoSeMe.namespace('protocol', (function(){
    * Tree dispatching occurs in the same order than they were received.
    */
   BinaryReader.prototype.attendPendingTrees = function() {
-    var args, err, tree, callbackName;
+    var args, err, tree, callbackName, lock;
     var currentSocket = Object.getPrototypeOf(this).socket;
     while (args = this.pendingTrees.shift()) {
 
       err = args[0];
       tree = args[1];
       callbackName = args[2];
+      lock = navigator.requestWakeLock('cpu');
 
-      setTimeout((function _processTree(callbackName, err, tree) {
-        if (this.sourceSocket !== currentSocket) { return; }
+      setTimeout((function _processTree(callbackName, err, tree, lock) {
+        if (this.sourceSocket === currentSocket) {
+          var method = this[callbackName];
+          if (typeof method === 'function') {
+            method(err, tree);
+          }
 
-        var method = this[callbackName];
-        if (typeof method === 'function') {
-          method(err, tree);
         }
-      }).bind(this, callbackName, err, tree));
+        lock.unlock();
+      }).bind(this, callbackName, err, tree, lock));
     }
   };
 
