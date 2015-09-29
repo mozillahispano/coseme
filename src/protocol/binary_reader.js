@@ -104,9 +104,7 @@ CoSeMe.namespace('protocol', (function(){
    */
   BinaryReader.prototype.readNextTree = function() {
     var readerTask = this.newReaderTask();
-    setTimeout(function() {
-      readerTask._readNextTree();
-    });
+    readerTask._readNextTree();
   };
 
   /**
