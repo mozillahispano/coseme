@@ -697,6 +697,7 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
       child = addNodes[i];
       if (child.tagName === 'participant') {
         jabberIds.push(child.getAttributeValue('jid'));
+      }
     }
 
     _signalInterface.send("group_addParticipantsSuccess",
