@@ -96,9 +96,7 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
     get: function(iqType, idx, node) {
       var childNode = node.getChild(0);
       if (node.getAttributeValue('xmlns') === 'urn:xmpp:ping') {
-        if (_autoPong) {
-          _onPing(idx);
-        }
+        _signalInterface.onPing && _signalInterface.onPing(idx);
         _signalInterface.send('ping', [idx]);
       } else if (ProtocolTreeNode.tagEquals(childNode,'query') &&
                  node.getAttributeValue('from') &&
@@ -173,7 +171,8 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
         if (!xmlns || ((xmlns == 'urn:xmpp') && jid )) {
           var presenceType = node.getAttributeValue('type');
           if (presenceType == 'unavailable') {
-            _signalInterface.send('presence_unavailable', [jid]);
+            var last = node.getAttributeValue('last');
+            _signalInterface.send('presence_unavailable', [jid, last && parseInt(last, 10)]);
           } else if (!presenceType || (presenceType == 'available')) {
             _signalInterface.send('presence_available', [jid]);
           }
@@ -297,9 +296,14 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
                                  author]);
         }
         else if (type === 'status') {
-          _signalInterface.send('notification_status', [from, msgId]);
+          var bodyNode = node.getChild(0);
+          var status = stringFromUtf8(bodyNode.data);
+          _signalInterface.send('notification_status', [from, msgId, status]);
         }
-
+        else {
+          // ignore, but at least acknowledge it
+          _signalInterface.onUnknownNotification(from, msgId, type);
+        }
       }
 
     } catch (x) {
@@ -798,12 +802,10 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
 
     for (var i = 0, l = children.length; i < l; i++) {
       child = children[i];
-      if (child.getAttributeValue('id') !== null) {
-        _signalInterface.send(
-          "contact_gotProfilePictureId",
-          [child.getAttributeValue("jid"), child.getAttributeValue("id")]
-        );
-      }
+      _signalInterface.send(
+        "contact_gotProfilePictureId",
+        [child.getAttributeValue("jid"), child.getAttributeValue("id")]
+      );
     }
   }
 
@@ -836,35 +838,7 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
 
   var alive = false;
 
-  var _onPing;
-  var _ping;
-  var _autoPong;
-
   return {
-    set onPing(aFun) {
-      _onPing = aFun;
-    },
-
-    get onPing() {
-      return _onPing;
-    },
-
-    set autoPong(aValue) {
-      _autoPong = aValue;
-    },
-
-    get autoPong() {
-      return _autoPong;
-    },
-
-    set ping(aFun) {
-      _ping = aFun;
-    },
-
-    get ping() {
-      return _ping;
-    },
-
     set socket(aSocket) {
       if (aSocket) {
         _connection = aSocket;
@@ -1169,14 +1143,25 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
       self._writeNode(newProtocolTreeNode('receipt', attributes));
     },
 
+    sendNotificationAck: function(to, id, type) {
+      var attributes = {
+        'class': 'notification',
+        id: id,
+        'to' : to
+      };
+      type && (attributes.type = type);
+
+      self._writeNode(newProtocolTreeNode('ack', attributes));
+    },
+
     getReceiptAck: function(to, id, type, participant, from) {
       var attributes = {
         'class': 'receipt',
-        type: type,
-        id: id
+        id: id,
+        'to' : to
       };
-      to && (attributes.to = to);
       from && (attributes.from = from);
+      type && (attributes.type = type);
       participant && (attributes.participant = participant);
 
       return newProtocolTreeNode('ack', attributes);
@@ -1392,9 +1377,9 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
               self.socket.onconnectionclosed = self._onErrorSendDisconnected;
               self.socket.onconnectionlost = self._onErrorSendDisconnected;
               self.readerThread.socket = self.socket;
-              self.readerThread.autoPong = self.autoPong;
-              self.readerThread.onPing = self.sendPong;
               self.readerThread.signalInterface = {
+                onPing: (self.autoPong ? self.sendPong : null),
+                onUnknownNotification: self.sendNotificationAck,
                 send: fireEvent
               };
               self.jid = self.socket.jid;
@@ -1473,12 +1458,12 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
     message_ack: function(aJid, aMsgId, type) {
       self.sendReceipt(aJid, aMsgId, type);
     },
-    notification_ack: function(aJid, aNotificationId) {
-      self.sendReceipt(aJid, aNotificationId);
+    notification_ack: function(aJid, aNotificationId, type) {
+      self.sendNotificationAck(aJid, aNotificationId, type);
     },
     delivered_ack: function(aTo, aMsgId, type, participant, from) {
       self._writeNode(
-        self.getReceiptAck(aTo, aMsgId, 'delivery', participant, from)
+        self.getReceiptAck(aTo, aMsgId, type, participant, from)
       );
     },
     visible_ack: function(aJid, aMsgId) {
@@ -1521,8 +1506,7 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
 
     group_create: function(aSubject) {
       var idx = self.makeId('create_group_');
-      var groupNode = newProtocolTreeNode('group', {
-        action: 'create',
+      var groupNode = newProtocolTreeNode('create', {
         subject: utf8FromString(aSubject)
       });
       var iqNode = newProtocolTreeNode('iq', {
@@ -1764,16 +1748,16 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
 
     disconnect: function(aReason) {
       logger.log('Disconnect sequence initiated...');
-      logger.log('Sending term signal to reader thread');
       if (self.readerThread.isAlive()) {
+        logger.log('Sending term signal to reader thread');
         self.readerThread.terminate();
         // TO-DO!!!! CHECK THE METHOD NAME!!!!
         self.socket.socket.close();
+        self.readerThread.sendDisconnected(aReason);
       }
 
       logger.log('Disconnected!', aReason);
       self.state = 0;
-      self.readerThread.sendDisconnected(aReason);
     },
 
     media_requestUpload: function(aB64Hash, aT, aSize, aB64OrigHash) {
