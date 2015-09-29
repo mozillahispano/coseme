@@ -636,7 +636,7 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
   function parseGetGroups(node) {
     var groups = [];
     var id = node.getAttributeValue('id');
-    node.children.forEach(function (groupNode) {
+    node.children[0].children.forEach(function (groupNode) {
       groups.push({
         gid: groupNode.getAttributeValue('id'),
         owner: groupNode.getAttributeValue('owner'),
@@ -713,6 +713,7 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
       child = removeNodes[i];
       if (child.tagName === 'participant') {
         jabberIds.push(child.getAttributeValue('jid'));
+      }
     }
 
     _signalInterface.send("group_removeParticipantsSuccess",
