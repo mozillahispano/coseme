@@ -171,7 +171,8 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
         if (!xmlns || ((xmlns == 'urn:xmpp') && jid )) {
           var presenceType = node.getAttributeValue('type');
           if (presenceType == 'unavailable') {
-            _signalInterface.send('presence_unavailable', [jid]);
+            var last = node.getAttributeValue('last');
+            _signalInterface.send('presence_unavailable', [jid, last && parseInt(last, 10)]);
           } else if (!presenceType || (presenceType == 'available')) {
             _signalInterface.send('presence_available', [jid]);
           }
@@ -295,7 +296,9 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
                                  author]);
         }
         else if (type === 'status') {
-          _signalInterface.send('notification_status', [from, msgId]);
+          var bodyNode = node.getChild(0);
+          var status = stringFromUtf8(bodyNode.data);
+          _signalInterface.send('notification_status', [from, msgId, status]);
         }
         else {
           // ignore, but at least acknowledge it
@@ -799,12 +802,10 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
 
     for (var i = 0, l = children.length; i < l; i++) {
       child = children[i];
-      if (child.getAttributeValue('id') !== null) {
-        _signalInterface.send(
-          "contact_gotProfilePictureId",
-          [child.getAttributeValue("jid"), child.getAttributeValue("id")]
-        );
-      }
+      _signalInterface.send(
+        "contact_gotProfilePictureId",
+        [child.getAttributeValue("jid"), child.getAttributeValue("id")]
+      );
     }
   }
 
