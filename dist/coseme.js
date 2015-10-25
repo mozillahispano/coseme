@@ -1,6 +1,3 @@
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 /*
 CryptoJS v3.1.2
 code.google.com/p/crypto-js
@@ -2788,7 +2785,7 @@ code.google.com/p/crypto-js/wiki/License
           throw new Error("Update not supported!");
         },
 
-        // This append doesn't actually append...
+        // This append doesn't actually append... 
         // It just stores a ref to data. So any previous data will be lost!
         _append: function (data) {
           this._data = data;
@@ -2910,7 +2907,7 @@ code.google.com/p/crypto-js/wiki/License
            this._doProcessBlock(dataWords, offset);
          }
        }
-       // Remove processed even if we didn't process any words...
+       // Remove processed even if we didn't process any words... 
        // the hard way. Let's assume dataWords is NOT an array
        var l = dataWords.length;
        var dataLeft = new Array(l - offset)
@@ -3364,16 +3361,16 @@ CoSeMe.namespace('config', (function(){
     groupDomain: 'g.us',
 
     tokenData: {
-      "v": "2.12.88",
+      "v": "2.13.5",
       // XXX: it is tokenData[d] + - + tokenData[v] + - + port
-      "r": "S40-2.12.88-5222",
-      "u": "WhatsApp/2.12.88 S40Version/14.26 Device/Nokia302",
+      "r": "S40-2.13.5-443",
+      "u": "WhatsApp/2.13.5 S40Version/14.26 Device/Nokia302",
       "d": "S40"
     },
 
     auth: {
       host: 'c2.whatsapp.net',
-      port: 5222,
+      port: 443,
 //      host: 'localhost',
 //      port: 8080,
       connectionOptions: {
@@ -4677,13 +4674,11 @@ CoSeMe.namespace('protocol', (function(){
    */
   BinaryWriter.prototype.streamStart = function(domain, resource, callback) {
     var writerTask = this.newWriteTask(callback);
-    setTimeout(function() {
-      writerTask._sendProtocol(IS_COUNTING);
-      writerTask._sendProtocol();
+    writerTask._sendProtocol(IS_COUNTING);
+    writerTask._sendProtocol();
 
-      writerTask._streamStart(domain, resource, IS_COUNTING);
-      writerTask._streamStart(domain, resource);
-    });
+    writerTask._streamStart(domain, resource, IS_COUNTING);
+    writerTask._streamStart(domain, resource);
   };
 
   BinaryWriter.prototype._sendProtocol = function(counting) {
@@ -4711,10 +4706,8 @@ CoSeMe.namespace('protocol', (function(){
    */
   BinaryWriter.prototype.write = function(tree, callback) {
     var writerTask = this.newWriteTask(callback);
-    setTimeout(function() {
-      writerTask._write(tree, IS_COUNTING);
-      writerTask._write(tree);
-    });
+    writerTask._write(tree, IS_COUNTING);
+    writerTask._write(tree);
   };
 
   /*
@@ -5145,7 +5138,9 @@ CoSeMe.namespace('protocol', (function(){
 
     var self = this;
     this.socket.ondata = function(evt) {
-     self.onSocketData(evt.data);
+      var lock = navigator.requestWakeLock('cpu');
+      self.onSocketData(evt.data);
+      lock.unlock();
     };
   };
 
@@ -5178,7 +5173,7 @@ CoSeMe.namespace('protocol', (function(){
   BinaryReader.prototype.onSocketData = function(rawData) {
     logger.log('Received socket data:', rawData.byteLength, 'bytes!')
     rawData && this.addDataChunk(rawData);
-    setTimeout(this.checkForAnotherTree.bind(this));
+    this.checkForAnotherTree();
   };
 
   /**
@@ -5187,16 +5182,15 @@ CoSeMe.namespace('protocol', (function(){
    * are more trees.
    */
   BinaryReader.prototype.checkForAnotherTree = function() {
-    if (this.waitingForMessage()) return;
+    while (!this.waitingForMessage()) {
 
-    if (!this.isStreamStartRead) {
-      this.readStreamStart();
-      this.isStreamStartRead = true;
-    } else {
-      this.readNextTree();
+      if (!this.isStreamStartRead) {
+        this.readStreamStart();
+        this.isStreamStartRead = true;
+      } else {
+        this.readNextTree();
+      }
     }
-
-    setTimeout(this.checkForAnotherTree.bind(this));
   }
 
   /**
@@ -5205,9 +5199,7 @@ CoSeMe.namespace('protocol', (function(){
    */
   BinaryReader.prototype.readStreamStart = function() {
     var readerTask = this.newReaderTask();
-    setTimeout(function() {
-      readerTask._readStreamStart();
-    });
+    readerTask._readStreamStart();
   };
 
   /**
@@ -5215,9 +5207,7 @@ CoSeMe.namespace('protocol', (function(){
    */
   BinaryReader.prototype.readNextTree = function() {
     var readerTask = this.newReaderTask();
-    setTimeout(function() {
-      readerTask._readNextTree();
-    });
+    readerTask._readNextTree();
   };
 
   /**
@@ -5305,22 +5295,25 @@ CoSeMe.namespace('protocol', (function(){
    * Tree dispatching occurs in the same order than they were received.
    */
   BinaryReader.prototype.attendPendingTrees = function() {
-    var args, err, tree, callbackName;
+    var args, err, tree, callbackName, lock;
     var currentSocket = Object.getPrototypeOf(this).socket;
     while (args = this.pendingTrees.shift()) {
 
       err = args[0];
       tree = args[1];
       callbackName = args[2];
+      lock = navigator.requestWakeLock('cpu');
 
-      setTimeout((function _processTree(callbackName, err, tree) {
-        if (this.sourceSocket !== currentSocket) { return; }
+      setTimeout((function _processTree(callbackName, err, tree, lock) {
+        if (this.sourceSocket === currentSocket) {
+          var method = this[callbackName];
+          if (typeof method === 'function') {
+            method(err, tree);
+          }
 
-        var method = this[callbackName];
-        if (typeof method === 'function') {
-          method(err, tree);
         }
-      }).bind(this, callbackName, err, tree));
+        lock.unlock();
+      }).bind(this, callbackName, err, tree, lock));
     }
   };
 
@@ -5789,7 +5782,7 @@ CoSeMe.namespace('registration', (function(){
   'use strict';
 
   function getToken(phone) {
-    var plain = 'PdA2DJyKoUrwLw1Bg6EIhzh502dF9noR9uFCllGk1435097139726' + phone;
+    var plain = 'PdA2DJyKoUrwLw1Bg6EIhzh502dF9noR9uFCllGk1442277896714' + phone;
     var data = CryptoJS.enc.Latin1.parse(plain);
     var output = CryptoJS.MD5(data);
     return output.toString();
@@ -6330,19 +6323,10 @@ CoSeMe.namespace('auth', (function() {
 
   function getFeatures() {
     var features = [
-      new Tree('receipt_acks'),
-      new Tree('w:profile:picture', { attributes: {
-        type: 'all'
-      }}),
-      new Tree('w:profile:picture', { attributes: {
-        type: 'group'
-      }}),
-      new Tree('notification', { attributes: {
-        type: 'participant'
-      }}),
-      new Tree('status', { attributes: {
-        notification: 'true'
-      }})
+      new Tree('readreceipts'),
+      new Tree('groups_v2'),
+      new Tree('privacy'),
+      new Tree('presence')
     ];
 
     return new Tree('stream:features', { children: features });
@@ -6595,9 +6579,7 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
     get: function(iqType, idx, node) {
       var childNode = node.getChild(0);
       if (node.getAttributeValue('xmlns') === 'urn:xmpp:ping') {
-        if (_autoPong) {
-          _onPing(idx);
-        }
+        _signalInterface.onPing && _signalInterface.onPing(idx);
         _signalInterface.send('ping', [idx]);
       } else if (ProtocolTreeNode.tagEquals(childNode,'query') &&
                  node.getAttributeValue('from') &&
@@ -6672,7 +6654,8 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
         if (!xmlns || ((xmlns == 'urn:xmpp') && jid )) {
           var presenceType = node.getAttributeValue('type');
           if (presenceType == 'unavailable') {
-            _signalInterface.send('presence_unavailable', [jid]);
+            var last = node.getAttributeValue('last');
+            _signalInterface.send('presence_unavailable', [jid, last && parseInt(last, 10)]);
           } else if (!presenceType || (presenceType == 'available')) {
             _signalInterface.send('presence_available', [jid]);
           }
@@ -6761,6 +6744,49 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
           _signalInterface
             .send(notification, [from, jid, null, timestamp, msgId, null]);
 
+        } else if (type === 'w:gp2') {
+          // map new notifications to existing interface for now...
+          var notification = 'notification_group';
+          var action = node.getChild(0).tag;
+
+          if (action === 'add') {
+            notification += 'ParticipantAdded';
+            var jid = node.getChild(0).getChild(0).getAttributeValue('jid');
+            _signalInterface
+              .send(notification, [from, jid, null, timestamp, msgId, null]);
+
+          } else if (action === 'create') {
+            notification += 'Created';
+            var displayName = node.getAttributeValue('notify');
+            var author = node.getAttributeValue('participant');
+            var bodyNode = node.getChild(0).getChild(0);
+            var subject = stringFromUtf8(bodyNode.getAttributeValue('subject'));
+
+            _signalInterface
+              .send(notification, [from, timestamp, msgId, subject, displayName,
+                                   author]);
+
+          } else if (action === 'remove') {
+            notification += 'ParticipantRemoved';
+            var jid = node.getChild(0).getChild(0).getAttributeValue('jid');
+            _signalInterface
+              .send(notification, [from, jid, null, timestamp, msgId, null]);
+
+          } else if (action === 'subject') {
+            notification += 'SubjectUpdated';
+            var displayName = node.getAttributeValue('notify');
+            var author = node.getAttributeValue('participant');
+            var bodyNode = node.getChild(0);
+            var subject = stringFromUtf8(bodyNode.getAttributeValue('subject'));
+
+            _signalInterface
+              .send(notification, [from, timestamp, msgId, subject, displayName,
+                                   author]);
+          } else {
+            // ignore, but at least acknowledge it
+            _signalInterface.onUnknownNotification(from, msgId, type);
+          }
+
         } else if (type === 'picture') {
           var prefix = from.indexOf('-') >= 0 ? 'group' : 'contactProfile';
           var notification = 'notification_' + prefix + 'Picture';
@@ -6796,9 +6822,14 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
                                  author]);
         }
         else if (type === 'status') {
-          _signalInterface.send('notification_status', [from, msgId]);
+          var bodyNode = node.getChild(0);
+          var status = stringFromUtf8(bodyNode.data);
+          _signalInterface.send('notification_status', [from, msgId, status]);
         }
-
+        else {
+          // ignore, but at least acknowledge it
+          _signalInterface.onUnknownNotification(from, msgId, type);
+        }
       }
 
     } catch (x) {
@@ -7081,18 +7112,28 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
       var subjectT = groupNode.getAttributeValue("s_t");
       var subjectOwner = groupNode.getAttributeValue("s_o");
       var creation = groupNode.getAttributeValue("creation");
-
-      _signalInterface.send("group_gotInfo",[jid, owner, subject, subjectOwner, subjectT, creation]);
+      var participants = groupNode.children.map(function(child){
+        return child.getAttributeValue('jid');
+      });
+ 
+      _signalInterface.send("group_gotInfo",[jid, owner, subject, subjectOwner, subjectT, creation, participants]);
     }
   }
 
   function parseGetGroups(node) {
     var groups = [];
     var id = node.getAttributeValue('id');
-    node.children.forEach(function (groupNode) {
+    node.children[0].children.forEach(function (groupNode) {
       groups.push({
         gid: groupNode.getAttributeValue('id'),
-        subject: stringFromUtf8(groupNode.getAttributeValue('subject'))
+        owner: groupNode.getAttributeValue('owner'),
+        subject: stringFromUtf8(groupNode.getAttributeValue('subject')),
+        subjectT: groupNode.getAttributeValue('s_t'),
+        subjectOwner: groupNode.getAttributeValue('s_o'),
+        creation: groupNode.getAttributeValue('creation'),
+        participants : groupNode.children.map(function(child){
+          return child.getAttributeValue('jid');
+        })
       });
     });
     _signalInterface.send('group_gotParticipating', [groups, id]);
@@ -7141,13 +7182,8 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
 
     for (var i = 0, l = addNodes.length; i < l; i++) {
       child = addNodes[i];
-      type = child.getAttributeValue('type');
-      if (type === 'success') {
-        jabberIds.push(child.getAttributeValue('participant'));
-      }
-      else {
-        logger.log('Failed to add',
-                   childCount.getAttributeValue('participant'));
+      if (child.tagName === 'participant') {
+        jabberIds.push(child.getAttributeValue('jid'));
       }
     }
 
@@ -7162,13 +7198,8 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
 
     for (var i = 0, l = removeNodes.length; i < l; i++) {
       child = removeNodes[i];
-      type = child.getAttributeValue('type');
-      if (type === 'success') {
-        jabberIds.push(child.getAttributeValue('participant'));
-      }
-      else {
-        logger.log('Failed to remove',
-                    childCount.getAttributeValue('participant'));
+      if (child.tagName === 'participant') {
+        jabberIds.push(child.getAttributeValue('jid'));
       }
     }
 
@@ -7297,12 +7328,10 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
 
     for (var i = 0, l = children.length; i < l; i++) {
       child = children[i];
-      if (child.getAttributeValue('id') !== null) {
-        _signalInterface.send(
-          "contact_gotProfilePictureId",
-          [child.getAttributeValue("jid"), child.getAttributeValue("id")]
-        );
-      }
+      _signalInterface.send(
+        "contact_gotProfilePictureId",
+        [child.getAttributeValue("jid"), child.getAttributeValue("id")]
+      );
     }
   }
 
@@ -7335,35 +7364,7 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
 
   var alive = false;
 
-  var _onPing;
-  var _ping;
-  var _autoPong;
-
   return {
-    set onPing(aFun) {
-      _onPing = aFun;
-    },
-
-    get onPing() {
-      return _onPing;
-    },
-
-    set autoPong(aValue) {
-      _autoPong = aValue;
-    },
-
-    get autoPong() {
-      return _autoPong;
-    },
-
-    set ping(aFun) {
-      _ping = aFun;
-    },
-
-    get ping() {
-      return _ping;
-    },
-
     set socket(aSocket) {
       if (aSocket) {
         _connection = aSocket;
@@ -7452,7 +7453,7 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
     // To-do: To be faithful with Yowsup, this should spawn a thread per handler
     signalHandlers[aSignal].forEach(function (aHandler) {
       try {
-        setTimeout(function() {aHandler.apply(undefined, aParams);}, 0);
+        aHandler.apply(undefined, aParams);
       } catch (x) {
         logger.error('FireEvent exception!', x);
       }
@@ -7668,14 +7669,25 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
       self._writeNode(newProtocolTreeNode('receipt', attributes));
     },
 
+    sendNotificationAck: function(to, id, type) {
+      var attributes = {
+        'class': 'notification',
+        id: id,
+        'to' : to
+      };
+      type && (attributes.type = type);
+
+      self._writeNode(newProtocolTreeNode('ack', attributes));
+    },
+
     getReceiptAck: function(to, id, type, participant, from) {
       var attributes = {
         'class': 'receipt',
-        type: type,
-        id: id
+        id: id,
+        'to' : to
       };
-      to && (attributes.to = to);
       from && (attributes.from = from);
+      type && (attributes.type = type);
       participant && (attributes.participant = participant);
 
       return newProtocolTreeNode('ack', attributes);
@@ -7698,6 +7710,17 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
         idx = self.iqId.toString(16);
       }
       return idx;
+    },
+
+    sendKeepalive: function() {
+      self._writeNode(null);
+    },
+
+    sendPing: function() {
+      var idx = self.makeId('ping_');
+      var iqNode =
+        newProtocolTreeNode('iq', {type: 'get', xmlns: 'w:p', to: self.domain, id: idx});
+      self._writeNode(iqNode);
     },
 
     sendPong: function(aIdx) {
@@ -7732,7 +7755,7 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
         id: idx,
         type: 'set',
         to: aGjid,
-        xmlns: 'w:g'
+        xmlns: 'w:g2'
       }, [operation]);
 
       self.readerThread.requests[idx] = aCallback;
@@ -7837,12 +7860,12 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
   }
 
   function _sendGetGroups(id, type) {
-    var commandNode = newProtocolTreeNode('list', { type: type });
+    var commandNode = newProtocolTreeNode(type, null);
     var iqNode = newProtocolTreeNode('iq', {
       id: id,
       type: 'get',
       to: 'g.us',
-      xmlns: 'w:g'
+      xmlns: 'w:g2'
     }, [commandNode]);
     self._writeNode(iqNode);
   }
@@ -7880,9 +7903,9 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
               self.socket.onconnectionclosed = self._onErrorSendDisconnected;
               self.socket.onconnectionlost = self._onErrorSendDisconnected;
               self.readerThread.socket = self.socket;
-              self.readerThread.autoPong = self.autoPong;
-              self.readerThread.onPing = self.sendPong;
               self.readerThread.signalInterface = {
+                onPing: (self.autoPong ? self.sendPong : null),
+                onUnknownNotification: self.sendNotificationAck,
                 send: fireEvent
               };
               self.jid = self.socket.jid;
@@ -7961,12 +7984,12 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
     message_ack: function(aJid, aMsgId, type) {
       self.sendReceipt(aJid, aMsgId, type);
     },
-    notification_ack: function(aJid, aNotificationId) {
-      self.sendReceipt(aJid, aNotificationId);
+    notification_ack: function(aJid, aNotificationId, type) {
+      self.sendNotificationAck(aJid, aNotificationId, type);
     },
     delivered_ack: function(aTo, aMsgId, type, participant, from) {
       self._writeNode(
-        self.getReceiptAck(aTo, aMsgId, 'delivery', participant, from)
+        self.getReceiptAck(aTo, aMsgId, type, participant, from)
       );
     },
     visible_ack: function(aJid, aMsgId) {
@@ -7985,18 +8008,20 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
 
     // Keep Alive
 
+    keepalive: self.sendKeepalive,
+    ping: self.sendPing,
     pong: self.sendPong,
 
     //Groups
 
     group_getInfo: function(aJid) {
-      var idx = self.makeId('get_g_info_');
+      var idx = self.makeId('get_groupv2_info_');
       var queryNode = newProtocolTreeNode('query');
       var iqNode = newProtocolTreeNode('iq', {
         id: idx,
         type: 'get',
         to: aJid,
-        xmlns: 'w:g'
+        xmlns: 'w:g2'
       }, [queryNode]);
 
       self.readerThread.requests[idx] = self.readerThread.parseGroupInfo;
@@ -8007,15 +8032,14 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
 
     group_create: function(aSubject) {
       var idx = self.makeId('create_group_');
-      var groupNode = newProtocolTreeNode('group', {
-        action: 'create',
+      var groupNode = newProtocolTreeNode('create', {
         subject: utf8FromString(aSubject)
       });
       var iqNode = newProtocolTreeNode('iq', {
         id: idx,
         type: 'set',
         to: 'g.us',
-        xmlns: 'w:g'
+        xmlns: 'w:g2'
       }, [groupNode]);
 
       self.readerThread.requests[idx] = self.readerThread.parseGroupCreated;
@@ -8053,7 +8077,7 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
         id: idx,
         type: 'set',
         to: 'g.us',
-        xmlns: 'w:g'
+        xmlns: 'w:g2'
       }, [leaveNode]);
 
       self.readerThread.requests[idx] = self.readerThread.parseGroupEnded;
@@ -8068,7 +8092,7 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
         id: idx,
         type: 'set',
         to: aGjid,
-        xmlns: 'w:g'
+        xmlns: 'w:g2'
       }, [subjectNode]);
 
       self.readerThread.requests[idx] = self.readerThread.parseGroupSubject;
@@ -8083,7 +8107,7 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
         id: idx,
         type: 'get',
         to: aGjid,
-        xmlns: 'w:g'
+        xmlns: 'w:g2'
       }, [listNode]);
 
       self.readerThread.requests[idx] = self.readerThread.parseParticipants;
@@ -8250,16 +8274,16 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
 
     disconnect: function(aReason) {
       logger.log('Disconnect sequence initiated...');
-      logger.log('Sending term signal to reader thread');
       if (self.readerThread.isAlive()) {
+        logger.log('Sending term signal to reader thread');
         self.readerThread.terminate();
         // TO-DO!!!! CHECK THE METHOD NAME!!!!
         self.socket.socket.close();
+        self.readerThread.sendDisconnected(aReason);
       }
 
       logger.log('Disconnected!', aReason);
       self.state = 0;
-      self.readerThread.sendDisconnected(aReason);
     },
 
     media_requestUpload: function(aB64Hash, aT, aSize, aB64OrigHash) {
@@ -8323,7 +8347,7 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
      var idx = self.makeId('get_groups_');
      self.readerThread.requests[idx] = self.readerThread.parseGroups;
 
-     var queryNode = newProtocolTreeNode('list',{xmlns: 'w:g', type: aGtype});
+     var queryNode = newProtocolTreeNode('list',{xmlns: 'w:g2', type: aGtype});
      var iqNode = newProtocolTreeNode('iq',{id: idx, type: 'get', to: 'g.us'},
                                       [queryNode]);
 
