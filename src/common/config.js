@@ -4,6 +4,8 @@ CoSeMe.namespace('config', (function(){
   return {
     logger: true,
 
+    customLogger: null,
+    
     domain: 's.whatsapp.net',
 
     groupDomain: 'g.us',

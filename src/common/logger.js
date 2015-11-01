@@ -127,6 +127,12 @@ CoSeMe.namespace('common', (function(){
   }
 
   function putMessage(kind, message) {
+    var console = console;
+
+    if (CoSeMe.config.customLogger) {
+      console = CoSeMe.config.customLogger;
+    }
+
     if (typeof console[kind] !== 'function') {
       kind = 'log';
     }
