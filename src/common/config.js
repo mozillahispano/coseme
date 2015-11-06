@@ -5,16 +5,16 @@ CoSeMe.namespace('config', (function(){
     logger: true,
 
     customLogger: null,
-    
+
     domain: 's.whatsapp.net',
 
     groupDomain: 'g.us',
 
     tokenData: {
-      "v": "2.13.5",
+      "v": "2.13.9",
       // XXX: it is tokenData[d] + - + tokenData[v] + - + port
-      "r": "S40-2.13.5-443",
-      "u": "WhatsApp/2.13.5 S40Version/14.26 Device/Nokia302",
+      "r": "S40-2.13.9",
+      "u": "WhatsApp/2.13.9 S40Version/14.26 Device/Nokia302",
       "d": "S40"
     },
 

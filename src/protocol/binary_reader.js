@@ -80,7 +80,6 @@ CoSeMe.namespace('protocol', (function(){
    */
   BinaryReader.prototype.checkForAnotherTree = function() {
     while (!this.waitingForMessage()) {
-
       if (!this.isStreamStartRead) {
         this.readStreamStart();
         this.isStreamStartRead = true;
@@ -471,6 +470,39 @@ CoSeMe.namespace('protocol', (function(){
            undefined;
   };
 
+  /* TODO: Explain and remove unused variables. There are some errors as well. */
+  BinaryReader.prototype.readNibble = function() {
+    var nibbles = [ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '.' ];
+    var b = this.message.read();
+    var ignoreLastNibble = (b & 0x80) != 0;
+    var size = (b & 0x7f);
+    var nrOfNibbles = size * 2 - ignoreLastNibble;
+    var buffer = new Uint8Array(size)
+    this.fillArray(buffer, size);
+    var charArray = [];
+    var c;
+    for (var i = 0, l = buffer.length; i < l; i++) {
+      b = buffer[i];
+      var dec = Number(buffer[i]) >> 4;
+      if (dec <= 11) {
+        charArray.push(nibbles[dec]);
+      } else {
+        throw new SyntaxError('Bad nibble ' + dec);
+      }
+
+      if (i != l - 1 || !ignoreLastNibble) {
+        var dec = Number(buffer[i]) & 0xf;
+        if (dec <= 11) {
+          charArray.push(nibbles[dec]);
+        } else {
+          throw new SyntaxError('Bad nibble ' + dec);
+        }
+      }
+    }
+
+    return charArray.join('');
+  };
+
   var SHORT_LIST_MARK = k.SHORT_LIST_MARK;
   var LONG_LIST_MARK  = k.LONG_LIST_MARK;
   var EMPTY_LIST_MARK = k.EMPTY_LIST_MARK;
@@ -522,6 +554,7 @@ CoSeMe.namespace('protocol', (function(){
   var SURROGATE_MARK = k.SURROGATE_MARK;
 
   var JID_MARK = k.JID_MARK;
+  var NIBBLE_MARK = k.NIBBLE_MARK;
 
   /**
    * Parses a string from the message buffer.
@@ -569,6 +602,11 @@ CoSeMe.namespace('protocol', (function(){
       else {
         throw new SyntaxError('could not reconstruct JID.');
       }
+
+    // Nibble
+    } else if (stringMark === NIBBLE_MARK) {
+      string = this.readNibble();
+
     } else {
       throw new SyntaxError('could not find a string.');
     }
