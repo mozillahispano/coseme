@@ -37,7 +37,7 @@ CoSeMe.namespace('protocol', (function(){
   };
 
   BinaryWriter.prototype._sendProtocol = function(counting) {
-    var dictionaryVersion = 4; // my guess: the dictionary version
+    var dictionaryVersion = 5; // my guess: the dictionary version
 
     this.resetBuffer(counting, IS_RAW);
     this.writeASCII('WA', counting);
