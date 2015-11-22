@@ -7139,6 +7139,9 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
       } else if (ProtocolTreeNode.tagEquals(childNode, "body") && msgId) {
         msgData = childNode.data;
 
+      } else if (ProtocolTreeNode.tagEquals(childNode, "enc")) {
+        _signalInterface.onEncryptedMessage(fromAttribute, msgId);
+
       } else if (!ProtocolTreeNode.tagEquals(childNode,"active")) {
         processActive(childNode);
       }
@@ -7235,7 +7238,7 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
       var participants = groupNode.children.map(function(child){
         return child.getAttributeValue('jid');
       });
- 
+
       _signalInterface.send("group_gotInfo",[jid, owner, subject, subjectOwner, subjectT, creation, participants]);
     }
   }
@@ -7800,6 +7803,17 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
       self._writeNode(newProtocolTreeNode('ack', attributes));
     },
 
+    sendReceiptErrorEncrypted: function(to, id) {
+      var attributes = {
+        'type': 'error',
+        id: id,
+        'to': to
+      };
+
+      self._writeNode(newProtocolTreeNode('receipt', attributes,
+        [ newProtocolTreeNode('error', { 'type': 'plaintext-only' })] ));
+    },
+
     getReceiptAck: function(to, id, type, participant, from) {
       var attributes = {
         'class': 'receipt',
@@ -8026,6 +8040,7 @@ CoSeMe.namespace('yowsup.connectionmanager', (function() {
               self.readerThread.signalInterface = {
                 onPing: (self.autoPong ? self.sendPong : null),
                 onUnknownNotification: self.sendNotificationAck,
+                onEncryptedMessage: self.sendReceiptErrorEncrypted,
                 send: fireEvent
               };
               self.jid = self.socket.jid;
