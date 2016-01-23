@@ -11,10 +11,10 @@ CoSeMe.namespace('config', (function(){
     groupDomain: 'g.us',
 
     tokenData: {
-      "v": "2.13.9",
+      "v": "2.13.21",
       // XXX: it is tokenData[d] + - + tokenData[v] + - + port
-      "r": "S40-2.13.9",
-      "u": "WhatsApp/2.13.9 S40Version/14.26 Device/Nokia302",
+      "r": "S40-2.13.21",
+      "u": "WhatsApp/2.13.21 S40Version/14.26 Device/Nokia302",
       "d": "S40"
     },
 
