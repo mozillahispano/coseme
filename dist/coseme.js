@@ -3363,10 +3363,10 @@ CoSeMe.namespace('config', (function(){
     groupDomain: 'g.us',
 
     tokenData: {
-      "v": "2.13.21",
+      "v": "2.13.39",
       // XXX: it is tokenData[d] + - + tokenData[v] + - + port
-      "r": "S40-2.13.21",
-      "u": "WhatsApp/2.13.21 S40Version/14.26 Device/Nokia302",
+      "r": "iPhone-2.12.12",
+      "u": "WhatsApp/2.13.39 S40Version/14.26 Device/Nokia302",
       "d": "S40"
     },
 
@@ -5902,7 +5902,7 @@ CoSeMe.namespace('registration', (function(){
   'use strict';
 
   function getToken(phone) {
-    var plain = 'PdA2DJyKoUrwLw1Bg6EIhzh502dF9noR9uFCllGk1447796090073' + phone;
+    var plain = 'PdA2DJyKoUrwLw1Bg6EIhzh502dF9noR9uFCllGk1456528956233' + phone;
     var data = CryptoJS.enc.Latin1.parse(plain);
     var output = CryptoJS.MD5(data);
     return output.toString();
@@ -6969,6 +6969,7 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
         author = messageNode.getAttributeValue("participant"),
         pushName = messageNode.getAttributeValue('notify'),
         msgId = messageNode.getAttributeValue("id"),
+        attribute_t = messageNode.getAttributeValue("t"),
         typeAttribute = messageNode.getAttributeValue("type"),
         wantsReceipt = false;
 
@@ -6990,12 +6991,10 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
           if (isGroup) {
             _signalInterface.send("group_imageReceived",
                                   [msgId, fromAttribute, author, mediaPreview,
-                                  mediaUrl, mediaSize, wantsReceipt, pushName,
-                                  timestamp]);
+                                  mediaUrl, mediaSize, wantsReceipt, pushName]);
           } else {
             _signalInterface.send("image_received", [msgId, fromAttribute, mediaPreview, mediaUrl,
-                                                     mediaSize, wantsReceipt, isBroadcast, pushName,
-                                                     timestamp]);
+                                                     mediaSize, wantsReceipt, isBroadcast, pushName]);
           }
         },
 
@@ -7003,11 +7002,10 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
           if (isGroup) {
             _signalInterface.send("group_videoReceived",
                                   [msgId, fromAttribute, author, mediaPreview, mediaUrl,
-                                   mediaSize, wantsReceipt, pushName, timestamp]);
+                                   mediaSize, wantsReceipt, pushName]);
           } else {
             _signalInterface.send("video_received", [msgId, fromAttribute, mediaPreview,
-                                                     mediaUrl, mediaSize, wantsReceipt,
-                                                     isBroadcast, pushName, timestamp]);
+                                                     mediaUrl, mediaSize, wantsReceipt, isBroadcast, pushName]);
           }
         },
 
@@ -7016,13 +7014,11 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
           if (isGroup) {
             _signalInterface.send("group_audioReceived",
                                   [msgId, fromAttribute, author,
-                                  mediaUrl, mediaSize, wantsReceipt, pushName,
-                                  timestamp]);
+                                  mediaUrl, mediaSize, wantsReceipt, pushName]);
           } else {
             _signalInterface.send("audio_received",
                                   [msgId, fromAttribute, mediaUrl,
-                                  mediaSize, wantsReceipt, isBroadcast, pushName,
-                                  timestamp]);
+                                  mediaSize, wantsReceipt, isBroadcast, pushName]);
           }
         },
 
@@ -7035,13 +7031,11 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
           if (isGroup) {
             _signalInterface.send("group_locationReceived",
                                   [msgId, fromAttribute, author, name, mediaPreview,
-                                   mlatitude, mlongitude, wantsReceipt, pushName,
-                                   timestamp]);
+                                   mlatitude, mlongitude, wantsReceipt, pushName]);
           } else {
             _signalInterface.send("location_received",
                                   [msgId, fromAttribute, name, mediaPreview, mlatitude,
-                                  mlongitude, wantsReceipt, isBroadcast, pushName,
-                                  timestamp]);
+                                  mlongitude, wantsReceipt, isBroadcast, pushName]);
           }
         },
 
@@ -7061,13 +7055,11 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
             if (isGroup) {
                 _signalInterface.send("group_vcardReceived",
                                       [msgId, fromAttribute, author, vcardName,
-                                       vcardData, wantsReceipt, pushName,
-                                       timestamp]);
+                                       vcardData, wantsReceipt, pushName]);
             } else {
               _signalInterface.send("vcard_received",
                                     [msgId, fromAttribute, vcardName,
-                                     vcardData, wantsReceipt, isBroadcast, pushName,
-                                     timestamp]);
+                                     vcardData, wantsReceipt, isBroadcast, pushName]);
             }
           }
         }
@@ -7174,7 +7166,7 @@ CoSeMe.namespace('yowsup.readerThread', (function() {
         if (newSubject) {
           _signalInterface.send("group_subjectReceived",
                                 [msgId, fromAttribute, author, newSubject,
-                                 timestamp, receiptRequested]);
+                                 Number(attribute_t).valueOf(),  receiptRequested]);
         }
       },
 
