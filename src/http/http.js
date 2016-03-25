@@ -4,7 +4,14 @@ CoSeMe.namespace('http', (function(){
   var logger = new CoSeMe.common.Logger('http');
 
   return {
-    doRequest: function _doRequest(operation, params, onready, onerror) {
+    /**
+     * @param {int} _isRetry is just for internal use, to limit retries
+     *                       if old version has been detected
+     */
+    doRequest: function _doRequest(
+      operation, params, onready, onerror, _isRetry
+    ) {
+      var _this = this;
 
       // Get the URI
       var URL = 'https://v.whatsapp.net/v2/' +
@@ -15,7 +22,16 @@ CoSeMe.namespace('http', (function(){
       var xhr = new XMLHttpRequest({mozSystem: true});
       xhr.onload = function() {
         logger.log(this.response);
-        onready && onready.call(this, this.response);
+        if (this.response.status === 'fail'
+          && this.response.reason === 'old_version' && !_isRetry
+        ) {
+          CoSeMe.config.updateUserAgentVersion(function() {
+            // retry this request
+            _this.doRequest(operation, params, onready, onerror, true);
+          });
+        } else {
+          onready && onready.call(this, this.response);
+        }
       };
       xhr.onerror = onerror;
       xhr.open('GET', URL);
