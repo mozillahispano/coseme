@@ -1,6 +1,18 @@
 CoSeMe.namespace('config', (function(){
   'use strict';
 
+  var version = localStorage.getItem('userAgentVersion') || '2.13.9';
+
+  function getTokenData() {
+    return {
+      "v": version,
+      // XXX: it is tokenData[d] + - + tokenData[v] + - + port
+      "r": "S40-" + version,
+      "u": "WhatsApp/" + version + " S40Version/14.26 Device/Nokia302",
+      "d": "S40"
+    };
+  }
+
   return {
     logger: true,
 
@@ -10,13 +22,9 @@ CoSeMe.namespace('config', (function(){
 
     groupDomain: 'g.us',
 
-    tokenData: {
-      "v": "2.13.9",
-      // XXX: it is tokenData[d] + - + tokenData[v] + - + port
-      "r": "S40-2.13.9",
-      "u": "WhatsApp/2.13.9 S40Version/14.26 Device/Nokia302",
-      "d": "S40"
-    },
+    versionSource: 'https://coderus.openrepos.net/whitesoft/whatsapp_scratch',
+
+    tokenData: getTokenData(),
 
     auth: {
       host: 'c2.whatsapp.net',
@@ -50,6 +58,27 @@ CoSeMe.namespace('config', (function(){
         "charSet": "utf-8",
         "authMethod": "X-WAWA"
       }
+    },
+
+    updateUserAgentVersion: function(callback) {
+      var _this = this;
+      var xhr = new XMLHttpRequest({mozSystem: true});
+      xhr.open('GET', this.versionSource);
+      xhr.responseType = 'json';
+      xhr.setRequestHeader('Accept', 'text/json');
+      xhr.addEventListener('load', function() {
+        if (this.response.e && this.response.e.match(/^([\d]+(\.[\d]+)*)+$/)) {
+          version = this.response.e;
+          localStorage.setItem('userAgentVersion', version);
+
+          _this.tokenData = getTokenData(); // refresh version in config data
+        }
+        callback && callback();
+      });
+      xhr.addEventListener('error', function() {
+        callback && callback();
+      });
+      xhr.send();
     }
-  }
+  };
 }()));
